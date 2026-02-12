@@ -214,6 +214,15 @@
         :class="{ theatrePlaylist: useTheatreMode }"
         @pause-player="pausePlayer"
       />
+      <watch-video-queue
+        v-if="hasQueue"
+        v-show="!isLoading"
+        ref="watchVideoQueue"
+        :video-id="videoId"
+        class="watchVideoSideBar watchVideoQueue"
+        :class="{ theatreQueue: useTheatreMode }"
+        @pause-player="pausePlayer"
+      />
       <watch-video-recommendations
         v-if="!isLoading && !hideRecommendedVideos"
         :data="recommendedVideos"

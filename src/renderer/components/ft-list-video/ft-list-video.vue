@@ -56,6 +56,16 @@
           @click="togglePlaylistPrompt"
         />
         <ft-icon-button
+          v-if="showAddToQueueButton"
+          :title="$t('Video.Add to Queue')"
+          :icon="['fas', 'list']"
+          class="addToQueueIcon"
+          :class="alwaysShowAddToPlaylistButton ? 'alwaysVisible' : ''"
+          :padding="appearance === `watchPlaylistItem` ? 5 : 6"
+          :size="appearance === `watchPlaylistItem` ? 14 : 18"
+          @click="handleAddToQueue"
+        />
+        <ft-icon-button
           v-if="isQuickBookmarkEnabled && quickBookmarkButtonEnabled"
           :title="quickBookmarkIconText"
           :icon="isInQuickBookmarkPlaylist ? ['fas', 'check'] : ['fas', 'bookmark']"

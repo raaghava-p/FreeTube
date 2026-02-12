@@ -1,0 +1,100 @@
+.miniplayer {
+  position: fixed;
+  inset-block: auto 20px;
+  inset-inline: auto 20px;
+  inline-size: 320px;
+  max-inline-size: 320px;
+  block-size: auto;
+  max-block-size: 300px;
+  background: var(--card-bg-color, #212121);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 40%);
+  z-index: 99999;
+  overflow: hidden;
+  pointer-events: auto;
+  contain: strict;
+  isolation: isolate;
+}
+
+.miniplayerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: 8px;
+  padding-inline: 12px;
+  background: var(--side-nav-color, #181818);
+  block-size: 36px;
+  box-sizing: border-box;
+}
+
+.miniplayerTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--primary-text-color, #fff);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-inline-end: 8px;
+}
+
+.miniplayerClose {
+  background: none;
+  border-style: none;
+  color: var(--secondary-text-color, #aaa);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.miniplayerClose:hover {
+  color: var(--primary-text-color, #fff);
+}
+
+.miniplayerVideo {
+  inline-size: 100%;
+  block-size: 180px;
+  background: #000;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.miniplayerVideoElement {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.miniplayerControls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px;
+  background: var(--side-nav-color, #181818);
+  block-size: 48px;
+  box-sizing: border-box;
+}
+
+.miniplayerButton {
+  background: none;
+  border-style: none;
+  color: var(--primary-text-color, #fff);
+  cursor: pointer;
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.miniplayerButton:hover {
+  background: var(--tertiary-text-color, #333);
+}
+
+.miniplayerError {
+  padding: 16px;
+  text-align: center;
+  color: var(--secondary-text-color, #aaa);
+  font-size: 12px;
+}

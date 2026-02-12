@@ -862,6 +862,18 @@ Video:
   Next: Next
   Watched: Watched
   Autoplay: Autoplay
+  Queue: Queue
+  Add to Queue: Add to Queue
+  Autoplay Queue: Autoplay Queue
+  Clear Queue: Clear Queue
+  Queue ended: Queue ended
+  Beginning of queue: Beginning of queue
+  Video added to queue: Video added to queue
+  Videos added to queue: '{count} videos added to queue'
+  Video removed from queue: Video removed from queue
+  Queue cleared: Queue cleared
+  Playing Next Video: Playing Next Video
+  Playing Previous Video: Playing Previous Video
   Starting soon, please refresh the page to check again: Starting soon, please refresh
     the page to check again
   # As in a Live Video
@@ -1093,6 +1105,9 @@ Tooltips:
   SponsorBlock Settings:
     UseDeArrowTitles: Replace video titles with user-submitted titles from DeArrow.
     UseDeArrowThumbnails: Replace video thumbnails with thumbnails from DeArrow.
+  Miniplayer:
+    Play/Pause: Play/Pause
+    Expand: Open in Full Player
 
 # Toast Messages
 Local API Error (Click to copy): Local API Error (Click to copy)

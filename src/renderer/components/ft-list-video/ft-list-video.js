@@ -167,6 +167,10 @@ export default defineComponent({
       return !this.$store.getters.getHidePlaylists
     },
 
+    showAddToQueueButton: function () {
+      return this.appearance !== 'watchPlaylistItem'
+    },
+
     inHistory: function () {
       // When in the history page, showing relative dates isn't very useful.
       // We want to show the exact date instead
@@ -895,6 +899,18 @@ export default defineComponent({
       this.$emit('remove-from-playlist', this.id, this.playlistItemId)
     },
 
+    handleAddToQueue: function() {
+      const videoData = {
+        videoId: this.id,
+        title: this.title,
+        author: this.channelName,
+        authorId: this.channelId,
+        lengthSeconds: this.lengthSeconds
+      }
+
+      this.addToQueue(videoData)
+    },
+
     ...mapActions([
       'updateHistory',
       'removeFromHistory',
@@ -902,6 +918,7 @@ export default defineComponent({
       'showAddToPlaylistPromptForManyVideos',
       'addVideo',
       'removeVideo',
+      'addToQueue',
     ])
   }
 })

@@ -11,6 +11,7 @@ import WatchVideoDescription from '../../components/WatchVideoDescription/WatchV
 import CommentSection from '../../components/CommentSection/CommentSection.vue'
 import WatchVideoLiveChat from '../../components/WatchVideoLiveChat/WatchVideoLiveChat.vue'
 import WatchVideoPlaylist from '../../components/watch-video-playlist/watch-video-playlist.vue'
+import WatchVideoQueue from '../../components/watch-video-queue/watch-video-queue.vue'
 import WatchVideoRecommendations from '../../components/WatchVideoRecommendations/WatchVideoRecommendations.vue'
 import FtAgeRestricted from '../../components/FtAgeRestricted/FtAgeRestricted.vue'
 import packageDetails from '../../../../package.json'
@@ -69,6 +70,7 @@ export default defineComponent({
     CommentSection,
     'watch-video-live-chat': WatchVideoLiveChat,
     'watch-video-playlist': WatchVideoPlaylist,
+    'watch-video-queue': WatchVideoQueue,
     'watch-video-recommendations': WatchVideoRecommendations,
     'ft-age-restricted': FtAgeRestricted
   },
@@ -211,7 +213,16 @@ export default defineComponent({
     defaultVideoFormat: function () {
       return this.$store.getters.getDefaultVideoFormat
     },
+    hasQueue: function () {
+      return this.$store.getters.hasQueue
+    },
+    isPlayingFromQueue: function () {
+      return this.$store.getters.isPlayingFromQueue
+    },
     autoplayEnabled: function () {
+      if (this.watchingQueue) {
+        return this.$store.getters.getAutoplayQueue
+      }
       return this.watchingPlaylist ? this.autoplayNextPlaylistVideo : this.autoplayNextRecommendedVideo
     },
     thumbnailPreference: function () {
@@ -244,11 +255,15 @@ export default defineComponent({
     hideVideoLikesAndDislikes: function () {
       return this.$store.getters.getHideVideoLikesAndDislikes
     },
+    watchingQueue: function () {
+      return this.isPlayingFromQueue || this.$route.query.fromQueue === 'true'
+    },
     theatrePossible: function () {
-      return !this.hideRecommendedVideos || (!this.hideLiveChat && this.isLive) || this.watchingPlaylist
+      return !this.hideRecommendedVideos || (!this.hideLiveChat && this.isLive) || this.watchingPlaylist || this.hasQueue
     },
     autoplayPossible: function () {
-      return (!this.watchingPlaylist && !this.hideRecommendedVideos && !!this.nextRecommendedVideo) ||
+      return (this.watchingQueue && this.$store.getters.canPlayNextInQueue) ||
+      (!this.watchingPlaylist && !this.hideRecommendedVideos && !!this.nextRecommendedVideo) ||
       (this.watchingPlaylist && !this.$refs.watchVideoPlaylist?.shouldStopDueToPlaylistEnd)
     },
     currentLocale: function () {
@@ -1362,6 +1377,18 @@ export default defineComponent({
         return
       }
 
+      // PRIORITY 1: Queue takes precedence
+      if (this.hasQueue && this.watchingQueue && this.$refs.watchVideoQueue?.shouldStopDueToQueueEnd) {
+        showToast(this.$t('Video.Queue ended'))
+        return
+      }
+
+      if (this.hasQueue && this.watchingQueue) {
+        this.$refs.watchVideoQueue.playNextVideo()
+        return
+      }
+
+      // PRIORITY 2: Playlist
       if (this.watchingPlaylist && this.$refs.watchVideoPlaylist?.shouldStopDueToPlaylistEnd) {
         // Let `watchVideoPlaylist` handle end of playlist, no countdown needed
         this.$refs.watchVideoPlaylist.playNextVideo()
@@ -1369,7 +1396,7 @@ export default defineComponent({
       }
 
       let nextVideoId = null
-      if (!this.watchingPlaylist) {
+      if (!this.watchingPlaylist && !this.watchingQueue) {
         nextVideoId = this.nextRecommendedVideo?.videoId
         if (!nextVideoId) {
           return
@@ -1381,8 +1408,10 @@ export default defineComponent({
         const player = this.$refs.player
 
         if (player?.isPaused()) {
-          if (this.watchingPlaylist) {
-            this.$refs.watchVideoPlaylist.playNextVideo()
+          if (this.watchingQueue) {
+            this.$refs.watchVideoQueue?.playNextVideo()
+          } else if (this.watchingPlaylist) {
+            this.$refs.watchVideoPlaylist?.playNextVideo()
           } else {
             this.$router.push({
               path: `/watch/${nextVideoId}`
@@ -1407,10 +1436,12 @@ export default defineComponent({
       }
     },
 
-    // Skip to the next video if in a playlist
+    // Skip to the next video if in a queue or playlist
     // else next recommended video if autoplay enabled
     handleSkipToNext: function () {
-      if (this.watchingPlaylist) {
+      if (this.hasQueue && this.watchingQueue) {
+        this.$refs.watchVideoQueue?.playNextVideo()
+      } else if (this.watchingPlaylist) {
         this.$refs.watchVideoPlaylist?.playNextVideo()
       } else if (!this.hideRecommendedVideos && this.nextRecommendedVideo) {
         this.$router.push({
@@ -1420,9 +1451,13 @@ export default defineComponent({
       }
     },
 
-    // Skip to the previous video in a playlist
+    // Skip to the previous video in a queue or playlist
     handleSkipToPrev: function () {
-      this.$refs.watchVideoPlaylist?.playPreviousVideo()
+      if (this.hasQueue && this.watchingQueue) {
+        this.$refs.watchVideoQueue?.playPreviousVideo()
+      } else if (this.watchingPlaylist) {
+        this.$refs.watchVideoPlaylist?.playPreviousVideo()
+      }
     },
 
     abortAutoplayCountdown: function (hideToast = false) {
@@ -1825,7 +1860,9 @@ export default defineComponent({
         this.abortAutoplayCountdown()
       }
 
-      if (this.watchingPlaylist) {
+      if (this.watchingQueue) {
+        this.$store.dispatch('toggleAutoplayQueue')
+      } else if (this.watchingPlaylist) {
         this.autoplayNextPlaylistVideo = !this.autoplayEnabled
       } else {
         this.autoplayNextRecommendedVideo = !this.autoplayEnabled
