@@ -75,7 +75,7 @@
     "vue-router": "^5.0.2",
     "vuex": "^4.1.0",
     "yaml-eslint-parser": "^2.0.0",
-    "youtubei.js": "^16.0.1"
+    "youtubei.js": "^17.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
