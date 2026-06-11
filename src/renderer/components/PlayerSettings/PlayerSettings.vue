@@ -177,6 +177,16 @@
     <div v-if="enableScreenshot">
       <FtFlexBox>
         <FtSelect
+          :placeholder="t('Settings.Player Settings.Screenshot.Mode')"
+          :value="screenshotMode"
+          :select-names="screenshotModeNames"
+          :select-values="screenshotModeValues"
+          :icon="['fas', 'expand']"
+          @change="handleUpdateScreenshotMode"
+        />
+      </FtFlexBox>
+      <FtFlexBox v-if="screenshotMode !== 'clipboard'">
+        <FtSelect
           :placeholder="t('Settings.Player Settings.Screenshot.Format Label')"
           :value="screenshotFormat"
           :select-names="SCREENSHOT_FORMAT_NAMES"
@@ -195,15 +205,8 @@
           @change="updateScreenshotQuality"
         />
       </FtFlexBox>
-      <FtFlexBox v-if="USING_ELECTRON">
-        <FtToggleSwitch
-          :label="t('Settings.Player Settings.Screenshot.Ask Path')"
-          :default-value="screenshotAskPath"
-          @change="updateScreenshotAskPath"
-        />
-      </FtFlexBox>
       <FtFlexBox
-        v-if="USING_ELECTRON && !screenshotAskPath"
+        v-if="USING_ELECTRON && screenshotMode === 'default_folder'"
         class="screenshotFolderContainer"
       >
         <p class="screenshotFolderLabel">
@@ -223,6 +226,7 @@
         />
       </FtFlexBox>
       <FtFlexBox
+        v-if="screenshotMode !== 'clipboard'"
         class="screenshotFolderContainer"
       >
         <p class="screenshotFilenamePatternTitle">
@@ -462,7 +466,9 @@ function updateDefaultVideoFormat(value) {
   store.dispatch('updateDefaultVideoFormat', value)
 }
 
-const QUALITY_VALUES = ['2160', '1440', '1080', '720', '480', '360', '240', '144', 'auto']
+// TODO: Revert when auto is fixed
+// const QUALITY_VALUES = ['2160', '1440', '1080', '720', '480', '360', '240', '144', 'auto']
+const QUALITY_VALUES = ['2160', '1440', '1080', '720', '480', '360', '240', '144']
 
 const qualityNames = computed(() => [
   t('Settings.Player Settings.Default Quality.4k'),
@@ -473,11 +479,20 @@ const qualityNames = computed(() => [
   t('Settings.Player Settings.Default Quality.360p'),
   t('Settings.Player Settings.Default Quality.240p'),
   t('Settings.Player Settings.Default Quality.144p'),
-  t('Settings.Player Settings.Default Quality.Auto')
+
+  // TODO: Revert when auto is fixed
+  // t('Settings.Player Settings.Default Quality.Auto')
 ])
 
 /** @type {import('vue').ComputedRef<'2160' | '1440' | '1080' | '720' | '480' | '360' | '240' | '144' | 'auto'>} */
-const defaultQuality = computed(() => store.getters.getDefaultQuality)
+const defaultQuality = computed(() => {
+  const value = store.getters.getDefaultQuality
+
+  // TODO: Revert when auto is fixed (720 is the default setttings value)
+  if (value === 'auto') { return '720' }
+
+  return value
+})
 
 /**
  * @param {'2160' | '1440' | '1080' | '720' | '480' | '360' | '240' | '144' | 'auto'} value
@@ -587,6 +602,27 @@ async function handleUpdateScreenshotFormat(format) {
   getScreenshotFilenameExample(screenshotFilenamePattern.value)
 }
 
+const screenshotModeNames = computed(() => [
+  t('Settings.Player Settings.Screenshot.Modes.Ask Path'),
+  ...process.env.IS_ELECTRON ? [t('Settings.Player Settings.Screenshot.Modes.Save To Folder')] : [],
+  t('Settings.Player Settings.Screenshot.Modes.Clipboard'),
+])
+const screenshotModeValues = computed(() => [
+  'prompt_folder',
+  ...process.env.IS_ELECTRON ? ['default_folder'] : [],
+  'clipboard'
+])
+
+/** @type {import('vue').ComputedRef<'prompt_folder' | 'default_folder' | 'clipboard'>} */
+const screenshotMode = computed(() => store.getters.getScreenshotMode)
+
+/**
+ * @param {'prompt_folder' | 'default_folder' | 'clipboard'} mode
+ */
+async function handleUpdateScreenshotMode(mode) {
+  await store.dispatch('updateScreenshotMode', mode)
+}
+
 /** @type {import('vue').ComputedRef<number>} */
 const screenshotQuality = computed(() => store.getters.getScreenshotQuality)
 
@@ -595,16 +631,6 @@ const screenshotQuality = computed(() => store.getters.getScreenshotQuality)
  */
 function updateScreenshotQuality(value) {
   store.dispatch('updateScreenshotQuality', value)
-}
-
-/** @type {import('vue').ComputedRef<boolean>} */
-const screenshotAskPath = computed(() => store.getters.getScreenshotAskPath)
-
-/**
- * @param {boolean} value
- */
-function updateScreenshotAskPath(value) {
-  store.dispatch('updateScreenshotAskPath', value)
 }
 
 /** @type {import('vue').ComputedRef<string>} */

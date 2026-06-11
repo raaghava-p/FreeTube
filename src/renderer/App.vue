@@ -21,7 +21,7 @@
       :inert="isAnyPromptOpen"
     >
       <div
-        v-if="showUpdatesBanner || showBlogBanner"
+        v-if="showUpdatesBanner"
         class="banner-wrapper"
       >
         <FtNotificationBanner
@@ -30,13 +30,6 @@
           :message="updateBannerMessage"
           role="link"
           @click="handleUpdateBannerClick"
-        />
-        <FtNotificationBanner
-          v-if="showBlogBanner"
-          class="banner"
-          :message="blogBannerMessage"
-          role="link"
-          @click="handleNewBlogBannerClick"
         />
       </div>
       <RouterView
@@ -66,10 +59,10 @@
         </h1>
       </template>
       <bdo
+        v-safer-html.lenient="updateChangelog"
         class="changeLogText"
         dir="ltr"
         lang="en"
-        v-html="updateChangelog"
       />
       <FtFlexBox>
         <FtButton
@@ -105,16 +98,16 @@
       v-if="showCreatePlaylistPrompt"
     />
     <FtToast />
+    <FtMiniplayer />
     <FtProgressBar
       v-if="showProgressBar"
     />
-    <FtMiniplayer />
   </div>
 </template>
 
 <script setup>
 import { marked } from 'marked'
-import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from './composables/use-i18n-polyfill'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -125,12 +118,13 @@ import FtNotificationBanner from './components/FtNotificationBanner/FtNotificati
 import FtPrompt from './components/FtPrompt/FtPrompt.vue'
 import FtButton from './components/FtButton/FtButton.vue'
 import FtToast from './components/FtToast/FtToast.vue'
+import FtMiniplayer from './components/FtMiniplayer/FtMiniplayer.vue'
 import FtProgressBar from './components/FtProgressBar/FtProgressBar.vue'
 import FtPlaylistAddVideoPrompt from './components/FtPlaylistAddVideoPrompt/FtPlaylistAddVideoPrompt.vue'
 import FtCreatePlaylistPrompt from './components/FtCreatePlaylistPrompt/FtCreatePlaylistPrompt.vue'
 import FtKeyboardShortcutPrompt from './components/FtKeyboardShortcutPrompt/FtKeyboardShortcutPrompt.vue'
 import FtSearchFilters from './components/FtSearchFilters/FtSearchFilters.vue'
-import FtMiniplayer from './components/FtMiniplayer/FtMiniplayer.vue'
+import { vSaferHtml } from './directives/vSaferHtml.js'
 
 import store from './store/index'
 
@@ -177,21 +171,20 @@ const dataReady = ref(false)
 onMounted(async () => {
   await store.dispatch('grabUserSettings')
 
-  // Invidious setup and profile/data loading are independent — run in parallel
-  const invidiousSetupPromise = store.dispatch('fetchInvidiousInstancesFromFile').then(() => {
+  updateTheme()
+
+  await store.dispatch('fetchInvidiousInstancesFromFile')
+  if (defaultInvidiousInstance.value === '') {
+    await store.dispatch('setRandomCurrentInvidiousInstance')
+  }
+
+  store.dispatch('fetchInvidiousInstances').then(() => {
     if (defaultInvidiousInstance.value === '') {
-      return store.dispatch('setRandomCurrentInvidiousInstance')
+      store.dispatch('setRandomCurrentInvidiousInstance')
     }
-  }).then(() => {
-    // Network fetch of latest instances (non-blocking, runs in background)
-    store.dispatch('fetchInvidiousInstances').then(() => {
-      if (defaultInvidiousInstance.value === '') {
-        store.dispatch('setRandomCurrentInvidiousInstance')
-      }
-    })
   })
 
-  const profilesAndDataPromise = store.dispatch('grabAllProfiles', t('Profile.All Channels')).then(() => {
+  store.dispatch('grabAllProfiles', t('Profile.All Channels')).then(() => {
     store.dispatch('grabHistory')
     store.dispatch('grabAllPlaylists')
     store.dispatch('grabAllSubscriptions')
@@ -204,16 +197,13 @@ onMounted(async () => {
       enableOpenUrl()
       store.dispatch('getExternalPlayerCmdArgumentsData')
     }
+
+    dataReady.value = true
+
+    setTimeout(() => {
+      checkForNewUpdates()
+    }, 500)
   })
-
-  await Promise.allSettled([invidiousSetupPromise, profilesAndDataPromise])
-
-  dataReady.value = true
-
-  setTimeout(() => {
-    checkForNewUpdates()
-    checkForNewBlogPosts()
-  }, 500)
 
   if (route.path === '/') {
     router.replace({ path: landingPage.value })
@@ -237,21 +227,24 @@ onBeforeUnmount(() => {
 /** @type {import('vue').ComputedRef<string>} */
 const baseTheme = computed(() => store.getters.getBaseTheme)
 
+watch(baseTheme, updateTheme)
+
 /** @type {import('vue').ComputedRef<string>} */
 const mainColor = computed(() => store.getters.getMainColor)
+
+watch(mainColor, updateTheme)
 
 /** @type {import('vue').ComputedRef<string>} */
 const secColor = computed(() => store.getters.getSecColor)
 
-// Single watcher for all theme-related settings. Runs immediately to set initial theme,
-// then re-runs once (not 3 times) when settings load from DB changes all three values.
-watchEffect(() => {
-  const base = baseTheme.value || 'system'
-  const main = mainColor.value || 'Red'
-  const sec = secColor.value || 'Blue'
-  document.body.className = `${base} main${main} sec${sec}`
+watch(secColor, updateTheme)
+
+function updateTheme() {
+  document.body.className = `${baseTheme.value || 'system'} main${mainColor.value || 'Red'} sec${secColor.value || 'Blue'}`
   document.body.dataset.systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-})
+}
+
+updateTheme()
 
 const showUpdatesBanner = ref(false)
 const latestVersionNumber = ref('')
@@ -327,55 +320,6 @@ function openDownloadsPage() {
   openExternalLink('https://freetubeapp.io#download')
   showReleaseNotes.value = false
   showUpdatesBanner.value = false
-}
-
-const showBlogBanner = ref(false)
-const latestBlogTitle = ref('')
-const latestBlogUrl = ref('')
-
-const blogBannerMessage = computed(() => {
-  return t('A new blog is now available, {blogTitle}. Click to view more', { blogTitle: latestBlogTitle.value })
-})
-
-/** @type {import('vue').ComputedRef<boolean>} */
-const checkForBlogPosts = computed(() => store.getters.getCheckForBlogPosts)
-
-async function checkForNewBlogPosts() {
-  if (!checkForBlogPosts.value) {
-    return
-  }
-
-  let lastAppWasRunning = localStorage.getItem('lastAppWasRunning')
-
-  if (lastAppWasRunning !== null) {
-    lastAppWasRunning = new Date(lastAppWasRunning)
-  }
-
-  const response = await fetch('https://write.as/freetube/feed/')
-  const text = await response.text()
-  const xmlDom = new DOMParser().parseFromString(text, 'application/xml')
-
-  const latestBlog = xmlDom.querySelector('item')
-  const latestPubDate = new Date(latestBlog.querySelector('pubDate').textContent)
-
-  if (lastAppWasRunning === null || latestPubDate > lastAppWasRunning) {
-    latestBlogTitle.value = latestBlog.querySelector('title').textContent
-    latestBlogUrl.value = latestBlog.querySelector('link').textContent
-    showBlogBanner.value = true
-  }
-
-  localStorage.setItem('lastAppWasRunning', new Date())
-}
-
-/**
- * @param {boolean} response
- */
-function handleNewBlogBannerClick(response) {
-  if (response) {
-    openExternalLink(latestBlogUrl.value)
-  }
-
-  showBlogBanner.value = false
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */
@@ -603,13 +547,7 @@ const windowTitle = computed(() => {
     !routePath.startsWith('/playlist/') &&
     !routePath.startsWith('/search/')
   ) {
-    let title = translateWindowTitle(route.meta.title)
-    if (!title) {
-      title = packageDetails.productName
-    } else {
-      title = `${title} - ${packageDetails.productName}`
-    }
-    return title
+    return translateWindowTitle(route.meta.title) ?? ''
   } else {
     return null
   }
@@ -619,7 +557,11 @@ const windowTitle = computed(() => {
 const appTitle = computed(() => store.getters.getAppTitle)
 
 watch(appTitle, (value) => {
-  document.title = value
+  if (value.length > 0) {
+    document.title = `${value} - ${packageDetails.productName}`
+  } else {
+    document.title = packageDetails.productName
+  }
 })
 
 watch(windowTitle, setWindowTitle)

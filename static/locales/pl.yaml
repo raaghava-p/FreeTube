@@ -42,15 +42,13 @@ Search / Go to URL: 'Szukaj / Przejdź do adresu URL'
   # In Filter Button
 Search Filters:
   Search Filters: 'Filtry wyszukiwania'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Trafność'
-    Rating: 'Ocena'
-    Upload Date: 'Data przesłania'
-    View Count: 'Liczba wyświetleń'
+    Prioritize: Ustal priorytety
+    Popularity: Popularność
   Time:
     Time: 'Czas przesłania'
     Any Time: 'Kiedykolwiek'
-    Last Hour: 'Ostatnia godzina'
     Today: 'Dzisiaj'
     This Week: 'W tym tygodniu'
     This Month: 'W tym miesiącu'
@@ -65,10 +63,9 @@ Search Filters:
   Duration:
     Duration: 'Długość'
     All Durations: 'Każda'
-    Short (< 4 minutes): 'Krótkie (< 4 minuty)'
-    Long (> 20 minutes): 'Długie (> 20 minut)'
-  # On Search Page
-    Medium (4 - 20 minutes): Średnie (4 - 20 minut)
+    '< 3 minutes': '< 3 minuty'
+    '> 20 minutes': '> 20 minut'
+    '3 - 20 minutes': 3 - 20 minut
   Search Results: 'Wyniki wyszukiwania'
   Fetching results. Please wait: 'Trwa wyszukiwanie. Proszę poczekać'
   Fetch more results: 'Pokaż więcej wyników'
@@ -227,7 +224,6 @@ Settings:
       Blur: Rozmyte
     Region for Trending: '„Na czasie” z obszaru'
         #! List countries
-    Check for Latest Blog Posts: Sprawdź ostatnie wpisy na blogu
     Check for Updates: Szukaj aktualizacji
     View all Invidious instance information: Pokaż informacje o wszystkich instancjach Invidious
     System Default: Ustawienie systemowe
@@ -404,7 +400,10 @@ Settings:
     Screenshot:
       Format Label: Format zrzutu
       Quality Label: Jakość zrzutu
-      Ask Path: Pytaj o folder zapisu
+      Modes:
+        Ask Path: Pytaj o folder zapisu
+        Save To Folder: Zapisz w folderze
+        Clipboard: Skopiuj do schowka
       Folder Label: Folder ze zrzutami
       Folder Button: Wybierz folder
       File Name Label: Wzorzec nazwy pliku
@@ -413,6 +412,7 @@ Settings:
         Forbidden Characters: Niedozwolone znaki
         Empty File Name: Pusta nazwa pliku
       Enable: Włącz zrzuty ekranu
+      Mode: Tryb - zrzut ekranu
     Enter Fullscreen on Display Rotate: Przyłącz na cały ekran przy obrocie wyświetlacza
     Skip by Scrolling Over Video Player: Przewijaj film kółkiem myszy na obszarze odtwarzacza
     Autoplay Interruption Timer: Czas do przerwania autoodtwarzania
@@ -617,7 +617,6 @@ About:
   #& About
 #On Channel Page
   Website: Strona internetowa
-  Blog: Blog
   Credits: Zasługi
   FAQ: FAQ
   Email: E-mail
@@ -629,7 +628,6 @@ About:
   room rules: zasady pokoju
   Chat on Matrix: Czat na Matrix
   Mastodon: Mastodon
-  Please read the: Proszę przeczytać
   Please check for duplicates before posting: Proszę poszukać duplikatów przed wysłaniem
   GitHub issues: problemy na GitHub
   Report a problem: Zgłoś problem
@@ -637,10 +635,11 @@ About:
   GitHub releases: Wydania na GitHub
   Downloads / Changelog: Wydania / Lista zmian
   Source code: Kod źródłowy
-  FreeTube is made possible by: FreeTube powstał dzięki
   Discussions: Dyskusje
-  Licensed under the: Licencjonowany na
   AGPLv3: AGPLv3
+  Licensed under the {licenseLink}: Licencjonowany na {licenseLink}
+  Please read the {roomRulesLink}: Proszę przeczytać {roomRulesLink}
+  FreeTube is made possible by {creditsPageLink}: FreeTube powstał dzięki {creditsPageLink}
 Channel:
   Subscribe: 'Zasubskrybuj'
   Unsubscribe: 'Odsubskrybuj'
@@ -947,7 +946,6 @@ Profile:
   Edit Profile Name: Edytuj nazwę profilu
   Create Profile Name: Nadaj nazwę profilowi
 The playlist has been reversed: Playlista została odwrócona
-A new blog is now available, {blogTitle}. Click to view more: 'Nowy wpis na blogu jest dostępny, {blogTitle}. Kliknij, aby zobaczyć więcej'
 Download From Site: Pobierz ze strony
 Version {versionNumber} is now available!  Click for more details: Wersja {versionNumber} jest już dostępna!  Kliknij po więcej szczegółów
 This video is unavailable because of missing formats. This can happen due to country unavailability.: Ten film jest niedostępny z powodu brakujących formatów. Przyczyną może być blokada regionalna.
@@ -987,7 +985,7 @@ Tooltips:
     UseDeArrowThumbnails: Zastąp miniaturki filmów miniaturkami z DeArrow.
 Playing Next Video Interval: Odtwarzanie kolejnego filmu już za chwilę. Wciśnij aby przerwać. | Odtwarzanie kolejnego filmu za {nextVideoInterval} sekundę. Wciśnij aby przerwać. | Odtwarzanie kolejnego filmu za {nextVideoInterval} sekund. Wciśnij aby przerwać.
 More: Więcej
-Unknown YouTube url type, cannot be opened in app: Nieznany typ adresu URL YouTube, nie można go otworzyć w aplikacji
+Unknown YouTube url type, cannot be opened in app: Nieznany typ adresu URL YouTube. Nie można go otworzyć w aplikacji
 Open New Window: Otwórz nowe okno
 Default Invidious instance has been cleared: Domyślna instancja Invidious została wyczyszczona
 Default Invidious instance has been set to {instance}: Domyślna instancja Invidious została ustawiona na {instance}
@@ -1007,7 +1005,7 @@ Channels:
   Channels: Kanały
   Search bar placeholder: Przeszukaj kanały
 Clipboard:
-  Copy failed: Skopiowanie do zasobnika nie powiodło się
+  Copy failed: Skopiowanie do schowka nie powiodło się
   Cannot access clipboard without a secure connection: Bez bezpiecznego połączenia nie można uzyskać dostępu do schowka
 Chapters:
   Chapters: Rozdziały
@@ -1015,8 +1013,8 @@ Chapters:
 Preferences: Preferencje
 Ok: Ok
 Hashtag:
-  Hashtag: Hashtag
-  This hashtag does not currently have any videos: Nie ma na razie żadnych filmów z takim hashtagiem
+  Hashtag: Hasztag
+  This hashtag does not currently have any videos: Nie ma na razie żadnych filmów z takim hasztagiem
 Channel Hidden: '{channel} dodany do filtra kanałów'
 Go to page: Idź do {page}
 Channel Unhidden: '{channel} usunięty z filtra kanału'
@@ -1118,3 +1116,5 @@ KeyboardShortcutPrompt:
 shortcutLabelSeparator: ｜
 Compact side navigation: Skompresuj boczną nawigację
 Expand side navigation: Rozwiń boczną nawigację
+Screenshot Clipboard Success: Zapisano zrzut ekranu do schowka
+Screenshot Clipboard Error: Zapisanie kopii zrzutu do schowka nie powiodło się

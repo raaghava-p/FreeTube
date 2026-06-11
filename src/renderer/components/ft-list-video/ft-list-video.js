@@ -1,5 +1,6 @@
 import { defineComponent } from 'vue'
 import FtIconButton from '../FtIconButton/FtIconButton.vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { mapActions } from 'vuex'
 import {
   copyToClipboard,
@@ -16,11 +17,16 @@ import { loadVideoInMiniplayer } from '../../helpers/miniplayer'
 import { prefetchVideoInfo } from '../../helpers/prefetch'
 import { deArrowData, deArrowThumbnail } from '../../helpers/sponsorblock'
 import thumbnailPlaceholder from '../../assets/img/thumbnail_placeholder.svg'
+import { vSaferHtml } from '../../directives/vSaferHtml.js'
 
 export default defineComponent({
   name: 'FtListVideo',
   components: {
-    'ft-icon-button': FtIconButton
+    'ft-icon-button': FtIconButton,
+    'ft-awesome-icon': FontAwesomeIcon,
+  },
+  directives: {
+    'safer-html': vSaferHtml
   },
   props: {
     data: {
@@ -84,6 +90,14 @@ export default defineComponent({
       default: false,
     },
     canRemoveFromPlaylist: {
+      type: Boolean,
+      default: false,
+    },
+    layout: {
+      type: String,
+      default: 'list',
+    },
+    showGrabBar: {
       type: Boolean,
       default: false,
     },
@@ -972,6 +986,14 @@ export default defineComponent({
 
       this.playVideoAtFrontOfQueue(videoData)
       loadVideoInMiniplayer(videoData)
+    },
+
+    onDragStart(event) {
+      // Prevent drag event except links
+      if (event.target.nodeName === 'A') { return }
+
+      event.preventDefault()
+      event.stopPropagation()
     },
 
     ...mapActions([

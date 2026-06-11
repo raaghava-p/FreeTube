@@ -31,7 +31,6 @@ Close Banner: ''
 
 Version {versionNumber} is now available!  Click for more details: ''
 Download From Site: ''
-A new blog is now available, {blogTitle}. Click to view more: ''
 Are you sure you want to open this link?: ''
 
 # Global
@@ -69,15 +68,11 @@ Search Listing:
   # In Filter Button
 Search Filters:
   Search Filters: ''
-  Sort By:
+  Prioritize:
     Most Relevant: ''
-    Rating: ''
-    Upload Date: ''
-    View Count: ''
   Time:
     Time: ''
     Any Time: ''
-    Last Hour: ''
     Today: ''
     This Week: ''
     This Month: ''
@@ -92,9 +87,6 @@ Search Filters:
   Duration:
     Duration: ''
     All Durations: ''
-    Short (< 4 minutes): ''
-    Medium (4 - 20 minutes): ''
-    Long (> 20 minutes): ''
   Features:
     Features: ''
     HD: ''
@@ -259,7 +251,6 @@ Settings:
   General Settings:
     General Settings: ''
     Check for Updates: ''
-    Check for Latest Blog Posts: ''
     Fallback to Non-Preferred Backend on Failure: ''
     Enable Search Suggestions: ''
     Open Deep Links In New Window: ''
@@ -437,7 +428,8 @@ Settings:
       Enable: ''
       Format Label: ''
       Quality Label: ''
-      Ask Path: ''
+      Modes:
+        Ask Path: ''
       Folder Label: ''
       Folder Button: ''
       File Name Label: ''
@@ -610,7 +602,6 @@ About:
   About: ''
   Beta: ''
   Source code: ''
-  Licensed under the: ''
   AGPLv3: ''
   Downloads / Changelog: ''
   GitHub releases: ''
@@ -622,15 +613,12 @@ About:
   GitHub issues: ''
   Please check for duplicates before posting: ''
   Website: ''
-  Blog: ''
   Email: ''
   Mastodon: ''
   Chat on Matrix: ''
-  Please read the: ''
   room rules: ''
   Translate: ''
   Credits: ''
-  FreeTube is made possible by: ''
   these people and projects: ''
   Donate: ''
 

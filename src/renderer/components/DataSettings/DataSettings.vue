@@ -818,7 +818,6 @@ async function importFreeTubeWatchHistory(textDecode) {
   const requiredKeys = [
     'author',
     'authorId',
-    'description',
     'isLive',
     'lengthSeconds',
     'published',
@@ -836,6 +835,7 @@ async function importFreeTubeWatchHistory(textDecode) {
     'lastViewedPlaylistItemId',
     'lastViewedPlaylistType',
     'viewCount',
+    'description',
   ]
 
   const ignoredKeys = [
@@ -868,6 +868,9 @@ async function importFreeTubeWatchHistory(textDecode) {
       showToast(t('Settings.Data Settings.History object has insufficient data, skipping item'))
       console.error('Missing Keys: ', missingKeys, historyData)
     } else {
+      // FreeTube history export does not have this data if the video was marked as watched manually, setting default value
+      historyObject.description = historyObject.description ?? ''
+
       historyItems.set(historyObject.videoId, historyObject)
     }
   })
@@ -1065,7 +1068,7 @@ async function importPlaylists() {
 
   let data = response.content
 
-  let playlists = null
+  let playlists
 
   // for the sake of backwards compatibility,
   // check if this is the old JSON array export (used until version 0.19.1),
@@ -1196,7 +1199,7 @@ async function importPlaylists() {
       shouldAddDuplicateVideos = existingPlaylist.videos.length > existingVideoIdSet.size
     }
 
-    const playlistVideos = [...existingPlaylist.videos]
+    const playlistVideos = deepCopy(existingPlaylist.videos)
 
     playlistObject.videos.forEach((video) => {
       let videoExists = false

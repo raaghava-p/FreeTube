@@ -45,15 +45,13 @@ Search / Go to URL: 'Ricerca o aggiungi URL YouTube'
   # In Filter Button
 Search Filters:
   Search Filters: 'Filtri di ricerca'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Più rilevante'
-    Rating: 'Valutazione'
-    Upload Date: 'Data di caricamento'
-    View Count: 'Visualizzazioni'
+    Popularity: Popolarità
+    Prioritize: Prioritizza
   Time:
     Time: 'Tempo'
     Any Time: 'Sempre'
-    Last Hour: 'Ultima ora'
     Today: 'Oggi'
     This Week: 'Questa settimana'
     This Month: 'Questo mese'
@@ -68,10 +66,9 @@ Search Filters:
   Duration:
     Duration: 'Durata'
     All Durations: 'Tutte le durate'
-    Short (< 4 minutes): 'Corto (< 4 minuti)'
-    Long (> 20 minutes): 'Lungo (> 20 minuti)'
-  # On Search Page
-    Medium (4 - 20 minutes): Medio (4 - 20 minuti)
+    '< 3 minutes': '< 3 minuti'
+    '> 20 minutes': '> 20 minuti'
+    '3 - 20 minutes': 3 - 20 minuti
   Search Results: 'Risultati della ricerca'
   Fetching results. Please wait: 'Caricamento risultati. Per favore attendi'
   Fetch more results: 'Carica più risultati'
@@ -230,7 +227,6 @@ Settings:
       Blur: Sfocatura
     Region for Trending: 'Regione per le tendenze'
         #! List countries
-    Check for Latest Blog Posts: Controlla gli ultimi post del blog
     Check for Updates: Controlla gli aggiornamenti
     View all Invidious instance information: Visualizza tutti i dati dell'istanza Invidious
     Clear Default Instance: Cancella istanza predefinita
@@ -414,8 +410,12 @@ Settings:
       Quality Label: Qualità screenshot
       Enable: Abilita screenshot
       Format Label: Formato screenshot
-      Ask Path: Chiedi cartella di salvataggio
+      Modes:
+        Ask Path: Chiedi cartella di salvataggio
+        Save To Folder: Salva nella cartella
+        Clipboard: Copia negli appunti
       File Name Tooltip: Puoi usare le seguenti variabili. %Y Anno 4 cifre. %M Mese 2 cifre. %D Giorno 2 cifre. %H Ora 2 cifre. %N Minuto 2 cifre. %S Secondo 2 cifre. %T Millisecondo 3 cifre. %s Durata in secondi del video. %t Millisecondi del video 3 cifre. %i ID video.
+      Mode: Modalità screenshot
     Enter Fullscreen on Display Rotate: Entra a schermo intero su Ruota schermo
     Skip by Scrolling Over Video Player: Salta tramite scorrimento sul lettore video
     Autoplay Interruption Timer: Timer di interruzione della riproduzione automatica
@@ -617,7 +617,6 @@ About:
   #& About
 #On Channel Page
   Donate: Dona
-  Blog: Blog
   GitHub issues: Segnalazioni GitHub
   Report a problem: Segnala un problema
   FAQ: Domande frequenti
@@ -626,11 +625,9 @@ About:
   Downloads / Changelog: Download / Registro delle modifiche
   GitHub releases: Versioni di GitHub
   these people and projects: queste persone e questi progetti
-  FreeTube is made possible by: FreeTube è reso possibile grazie a
   Credits: Crediti
   Translate: Traduzioni
   room rules: regole stanza
-  Please read the: Per favore leggi
   Chat on Matrix: Chatta su Matrix
   Mastodon: Mastodon
   Email: E-mail
@@ -640,7 +637,9 @@ About:
   Beta: Beta
   Discussions: Discussioni
   AGPLv3: AGPLv3
-  Licensed under the: Concesso con licenza
+  FreeTube is made possible by {creditsPageLink}: FreeTube è reso possibile da {creditsPageLink}
+  Licensed under the {licenseLink}: Concesso in licenza con {licenseLink}
+  Please read the {roomRulesLink}: Per favore leggi il {roomRulesLink}
 Channel:
   Subscribe: 'Iscriviti'
   Unsubscribe: 'Disiscriviti'
@@ -802,7 +801,7 @@ Video:
     Playback will resume automatically when your connection comes back: La riproduzione riprenderà automaticamente quando verrà ripristinata la connessione.
     Skipped segment: Segmento {segmentCategory} saltato
     Autoplay is off: La riproduzione automatica è disattivata
-    Autoplay is on: La riproduzione automatica è attiva
+    Autoplay is on: La riproduzione automatica è attivata
   IP block: YouTube ha bloccato il tuo indirizzo IP impedendogli di guardare i video. Prova a passare a una VPN o a un proxy diverso.
   Unlisted: Non elencato
   MembersOnly: I video riservati agli abbonati non possono essere guardati con FreeTube, poiché richiedono l'accesso a Google e l'iscrizione a pagamento al canale dell'utente che li ha caricati.
@@ -899,14 +898,13 @@ Shuffle is now disabled: 'La riproduzione casuale è disabilitata'
 Shuffle is now enabled: 'La riproduzione casuale è abilitata'
 Playing Next Video: 'Riproduzione del video successivo'
 Playing Previous Video: 'Riproduzione del video precedente'
-Canceled next video autoplay: 'Riproduzione automatica del prossimo video annullata'
+Canceled next video autoplay: 'Riproduzione automatica del video successivo annullata'
 'The playlist has ended. Enable loop to continue playing': 'La playlist è terminata. Abilita la riproduzione a ciclo continuo per continuare la riproduzione'
 
 Yes: 'Sì'
 No: 'No'
-A new blog is now available, {blogTitle}. Click to view more: 'Un nuovo blog è ora disponibile, {blogTitle}. Fai clic per saperne di più'
 Version {versionNumber} is now available!  Click for more details: La versione {versionNumber} è ora disponibile! Fai clic per maggiori dettagli
-Download From Site: Scarica dal sito
+Download From Site: 'Scarica dal sito'
 The playlist has been reversed: La playlist è stata invertita
 Profile:
   Are you sure you want to delete the selected channels?  This will not delete the channel from any other profile.: Sei sicuro di voler eliminare i canali selezionati? L'operazione non eliminerà i canali da nessun altro profilo.
@@ -954,7 +952,7 @@ Tooltips:
   Player Settings:
     Default Video Format: Imposta i formati usati quando un video viene riprodotto. I formati DASH possono riprodurre qualità maggiore. I formati compatibili sono limitati ad un massimo di 360p ma usano meno banda. I formati audio riproducono solo l'audio.
     Proxy Videos Through Invidious: Connessione a Invidious per riprodurre i video invece di una connessione diretta a YouTube.
-    Scroll Playback Rate Over Video Player: Mentre il cursore è sopra il video, tieni premuto il tasto CTRL (Command su Mac) e scorri la rotella del mouse in avanti o indietro per controllare la velocità di riproduzione. Tieni premuto il tasto CTRL (Command su Mac) e fai clic con il tasto sinistro del mouse per tornare rapidamente alla velocità di riproduzione predefinita (1x a meno che non sia stata cambiata nelle Impostazioni).
+    Scroll Playback Rate Over Video Player: Mentre il cursore si trova sul video, tieni premuto il tasto Control (Command su Mac) e ruota la rotellina del mouse in avanti o all'indietro per regolare la velocità di riproduzione. Tieni premuto il tasto Control (Command su Mac) e fai clic con il tasto sinistro del mouse per tornare rapidamente alla velocità di riproduzione predefinita (1x, a meno che non sia stata modificata nelle impostazioni).
     Skip by Scrolling Over Video Player: Usa la rotella di scorrimento per saltare il video, in stile MPV.
   Subscription Settings:
     Fetch Feeds from RSS: Se abilitato, FreeTube userà gli RSS invece del metodo standard per leggere le iscrizioni. Gli RSS sono più veloci e impediscono il blocco dell'IP, ma non forniscono determinate informazioni come la durata del video, lo stato dal vivo o i post
@@ -989,7 +987,7 @@ More: Altro
 Open New Window: Apri una nuova finestra
 Default Invidious instance has been cleared: L'istanza predefinita di Invidious è stata cancellata
 Default Invidious instance has been set to {instance}: L'istanza predefinita di Invidious è stata impostata a {instance}
-Unknown YouTube url type, cannot be opened in app: Tipo di URL di YouTube sconosciuto, non può essere aperto nell'app
+Unknown YouTube url type, cannot be opened in app: Tipo di URL YouTube sconosciuto, impossibile aprirlo nell'app
 Search Bar:
   Clear Input: Pulisci ricerca
   Remove: Rimuovi
@@ -1117,3 +1115,5 @@ KeyboardShortcutPrompt:
 shortcutLabelSeparator: ｜
 Expand side navigation: Espandi la navigazione laterale
 Compact side navigation: Compatta la navigazione laterale
+Screenshot Clipboard Success: Screenshot salvato negli appunti
+Screenshot Clipboard Error: Impossibile copiare lo screenshot negli appunti

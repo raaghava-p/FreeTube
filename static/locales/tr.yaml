@@ -42,22 +42,19 @@ Global:
     Comment Count: 1 yorum | {count} yorum
 Version {versionNumber} is now available!  Click for more details: '{versionNumber} sürümü çıktı!  Daha fazla ayrıntı için tıklayın'
 Download From Site: 'Siteden indir'
-A new blog is now available, {blogTitle}. Click to view more: 'Yeni blog gönderisi var, {blogTitle}. Daha fazlasını görüntülemek için tıklayın'
 
 # Search Bar
 Search / Go to URL: 'Ara / URL''ye git'
   # In Filter Button
 Search Filters:
   Search Filters: 'Arama Süzgeçleri'
-  Sort By:
+  Prioritize:
     Most Relevant: 'En Uygun'
-    Rating: 'Derecelendirme'
-    Upload Date: 'Yükleme Tarihi'
-    View Count: 'İzlenme Sayısı'
+    Prioritize: Öncelik Ver
+    Popularity: Popülerlik
   Time:
     Time: 'Zaman'
     Any Time: 'Herhangi Bir Zaman'
-    Last Hour: 'Son Bir Saat'
     Today: 'Bugün'
     This Week: 'Bu Hafta'
     This Month: 'Bu Ay'
@@ -72,10 +69,9 @@ Search Filters:
   Duration:
     Duration: 'Süre'
     All Durations: 'Tüm Süreler'
-    Short (< 4 minutes): 'Kısa (4 dakikadan az)'
-    Long (> 20 minutes): 'Uzun (20 dakikadan fazla)'
-  # On Search Page
-    Medium (4 - 20 minutes): Orta (4 - 20 dakika)
+    '< 3 minutes': '3 dakikadan az'
+    '> 20 minutes': '20 dakikadan fazla'
+    '3 - 20 minutes': 3 - 20 dakika
   Search Results: 'Arama Sonuçları'
   Fetching results. Please wait: 'Sonuçlar getiriliyor. Lütfen bekleyin'
   Fetch more results: 'Daha fazla sonuç getir'
@@ -213,7 +209,6 @@ Settings:
   General Settings:
     General Settings: 'Genel'
     Check for Updates: 'Güncellemeleri Denetle'
-    Check for Latest Blog Posts: 'En Yeni Blog Gönderilerini Denetle'
     Fallback to Non-Preferred Backend on Failure: 'Hata Durumunda Tercih Edilmeyen Arka Uca Geç'
     Enable Search Suggestions: 'Arama Önerilerini Etkinleştir'
     Default Landing Page: 'Öntanımlı Açılış Ekranı'
@@ -410,7 +405,10 @@ Settings:
     Max Video Playback Rate: En Yüksek Video Oynatma Hızı
     Screenshot:
       Quality Label: Ekran Görüntüsü Kalitesi
-      Ask Path: Kaydedileceği Klasörü Sor
+      Modes:
+        Ask Path: Kaydedileceği Klasörü Sor
+        Save To Folder: Klasöre Kaydet
+        Clipboard: Panoya Kopyala
       Folder Label: Ekran Görüntüsü Klasörü
       File Name Label: Dosya Adı Kalıbı
       Error:
@@ -420,6 +418,7 @@ Settings:
       Enable: Ekran Görüntüsünü Etkinleştir
       Folder Button: Klasör Seç
       File Name Tooltip: Aşağıda değişkenleri kullanabilirsiniz. %Y Yıl 4 basamak. %M Ay 2 basamak. %D Gün 2 basamak. %H Saat 2 basamak. %N Dakika 2 basamak. %S Saniye 2 basamak. %T Milisaniye 3 basamak. %s Video Saniyesi. %t Video Milisaniyesi 3 basamak. %i Video Kimliği.
+      Mode: Ekran Görüntüsü Modu
     Enter Fullscreen on Display Rotate: Ekran Döndürüldüğünde Tam Ekrana Geç
     Skip by Scrolling Over Video Player: Video Oynatıcı Üzerinde Kaydırarak Atla
     Autoplay Interruption Timer: Otomatik Oynatma Durdurma Sayacı
@@ -623,7 +622,6 @@ About:
   About: 'Hakkında'
   #& About
   Website: Web sitesi
-  Blog: Blog
   Credits: Katkıda Bulunanlar
   FAQ: SSS
   Email: E-posta
@@ -631,10 +629,8 @@ About:
   Donate: Bağış Yap
   Help: Yardım
   these people and projects: bu kişiler ve projeler
-  FreeTube is made possible by: FreeTube'e katkıda bulunanlar
   Translate: Çevir
   room rules: oda kuralları
-  Please read the: Lütfen okuyun
   Chat on Matrix: Matrix'te sohbet et
   Mastodon: Mastodon
   Please check for duplicates before posting: Lütfen bildirmeden önce bildirilmiş olup olmadığına bakın
@@ -645,8 +641,10 @@ About:
   Downloads / Changelog: İndirmeler / Değişiklikler
   Source code: Kaynak kodları
   Discussions: Tartışmalar
-  Licensed under the: 'Lisans:'
   AGPLv3: AGPLv3
+  Licensed under the {licenseLink}: '{licenseLink} altında lisanslanmıştır'
+  Please read the {roomRulesLink}: 'Lütfen okuyun: {roomRulesLink}'
+  FreeTube is made possible by {creditsPageLink}: 'FreeTube için emeği geçenler: {creditsPageLink}'
 Profile:
   Profile Select: 'Profil Seçimi'
   All Channels: 'Tüm Kanallar'
@@ -1121,3 +1119,5 @@ KeyboardShortcutPrompt:
   Skip to Previous Video: Oynatma listesindeki bir önceki videoya atla
 Compact side navigation: Yan gezinmeyi daralt
 Expand side navigation: Yan gezinmeyi genişlet
+Screenshot Clipboard Success: Ekran görüntüsü panoya kaydedildi
+Screenshot Clipboard Error: Ekran görüntüsü panoya kopyalanamadı

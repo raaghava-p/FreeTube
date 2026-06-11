@@ -45,15 +45,13 @@ Search / Go to URL: 'Søk / gå til nettadresse'
   # In Filter Button
 Search Filters:
   Search Filters: 'Søkefiltre'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Mest relevant'
-    Rating: 'Vurdering'
-    Upload Date: 'Opplastingsdato'
-    View Count: 'Visninger'
+    Prioritize: Prioriter
+    Popularity: Popularitet
   Time:
     Time: 'Tid'
     Any Time: 'Når som helst'
-    Last Hour: 'Den siste timen'
     Today: 'I dag'
     This Week: 'Denne uken'
     This Month: 'Denne måneden'
@@ -68,10 +66,9 @@ Search Filters:
   Duration:
     Duration: 'Varighet'
     All Durations: 'Alle varigheter'
-    Short (< 4 minutes): 'Kort (< 4 minutter)'
-    Long (> 20 minutes): 'Lang (> 20 minutter)'
-  # On Search Page
-    Medium (4 - 20 minutes): Middels (4–20 minutter)
+    '< 3 minutes': '< 3 minutter'
+    '> 20 minutes': '> 20 minutter'
+    '3 - 20 minutes': 3–20 minutter
   Search Results: 'Søkeresultater'
   Fetching results. Please wait: 'Henter resultater. Vennligst vent'
   Fetch more results: 'Hent flere resultater'
@@ -232,7 +229,6 @@ Settings:
         #! List countries
     Check for Updates: Se etter oppdateringer
     View all Invidious instance information: Vis informasjon om alle Invidious-instanser
-    Check for Latest Blog Posts: Vis nye blogginnlegg
     System Default: Standardinnstillinger
     Clear Default Instance: Fjern standardinstans
     Set Current Instance as Default: Bruk den gjeldende instansen som standard
@@ -411,7 +407,8 @@ Settings:
       Folder Button: Velg mappe
       Format Label: Skjermbildeformat
       Quality Label: Skjermbildekvalitet
-      Ask Path: Spør om hvor ting skal lagres
+      Modes:
+        Ask Path: Spør om hvor ting skal lagres
       File Name Tooltip: Du kan bruke variablene nedenfor. %Y år, i 4 siffer. %M måned, i 2 siffer. %D dag, i to siffer. %H time, i to siffer. %N minutt, i to siffer. %s sekund, i to siffer. %T millisekunder, i tre siffer. %s videosekund. %t videomillisekunder, i tre siffer. %i video-ID.
     Max Video Playback Rate: Maksimal hastighet for videoavspilling
     Scroll Playback Rate Over Video Player: Juster avspillingshastighet ved rulling over videoavspiller
@@ -434,7 +431,7 @@ Settings:
     Search cache has been cleared: 'Hurtiglageret for søk har blitt tømt'
     Remove Watch History: 'Fjern visningshistorikk'
     Are you sure you want to remove your entire watch history?: 'Er du sikker på at du vil tømme hele visningshistorikken din?'
-    Watch history has been cleared: 'VIsningshistorikk har blitt tømt'
+    Watch history has been cleared: 'Visningshistorikken har blitt tømt'
     Remove All Subscriptions / Profiles: Fjern alle abonnementer/profiler
     Are you sure you want to remove all subscriptions and profiles?  This cannot be undone.: Er du sikker på at du vil fjerne alle abonnementer og profiler? Dette kan ikke bli omgjort.
     Save Watched Videos With Last Viewed Playlist: Lagre sette videoer med sist sette spilleliste
@@ -623,24 +620,23 @@ About:
   Website: Nettsted
   Report a problem: Rapporter et problem
   Source code: Kildekode
-  Please read the: Vennligst les
   Mastodon: Mastodon
   Email: E-post
-  Blog: Blogg
   Translate: Oversett
   Please check for duplicates before posting: Vennligst sjekk om problemet ditt allerede har blitt sendt inn før du sender inn en melding
   these people and projects: disse folkene og prosjektene
-  FreeTube is made possible by: FreeTube er gjort mulig av
   Credits: Bidragsytere
-  room rules: reglene for rommet
+  room rules: rommreglene
   GitHub issues: GitHub-problemsporer
   FreeTube Wiki: FreeTube-wiki
   GitHub releases: GitHub-utgivelser
   Beta: Beta
   Chat on Matrix: Snakk med oss på Matrix
   Discussions: Diskusjoner
-  Licensed under the: Lisensiert under
   AGPLv3: AGPLv3
+  Licensed under the {licenseLink}: Lisensiert under {licenseLink}
+  Please read the {roomRulesLink}: Les {roomRulesLink}
+  FreeTube is made possible by {creditsPageLink}: FreeTube blir til takket være {creditsPageLink}
 Channel:
   Subscribe: 'Abonner'
   Unsubscribe: 'Opphev abonnement'
@@ -980,9 +976,8 @@ Tooltips:
   SponsorBlock Settings:
     UseDeArrowTitles: Erstatt videonavn med brukerinnsendte navn fra DeArrow.
     UseDeArrowThumbnails: Erstatt miniatyrbilder på videoer med bilder fra DeArrow.
-A new blog is now available, {blogTitle}. Click to view more: Et nytt blogginnlegg er tilgjengelig, {blogTitle}. Klikk her for å se mer
 The playlist has been reversed: Spillelisten har blitt snudd
-Download From Site: Last ned fra nettside
+Download From Site: Last ned fra siden
 Version {versionNumber} is now available!  Click for more details: Versjon {versionNumber} er nå tilgjengelig! Klikk her for detaljer
 Playing Next Video Interval: Spiller av neste video nå. Klikk her for å avbryte. | Spiller av neste video om {nextVideoInterval} sekund. Klikk her for å avbryte. | Spiller av neste video om {nextVideoInterval} sekunder. Klikk her for å avbryte.
 More: Mer

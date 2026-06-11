@@ -32,9 +32,8 @@ const state = {
   newPlaylistVideoObject: [],
   regionNames: [],
   regionValues: [],
-  recentBlogPosts: [],
   searchSettings: {
-    sortBy: 'relevance',
+    prioritize: 'relevance',
     time: '',
     type: 'all',
     duration: '',
@@ -138,10 +137,6 @@ const getters = {
 
   getRegionValues(state) {
     return state.regionValues
-  },
-
-  getRecentBlogPosts(state) {
-    return state.recentBlogPosts
   },
 
   getExternalPlayerNames(state) {
@@ -404,7 +399,7 @@ const actions = {
     switch (urlType) {
       case 'playlist': {
         if (!url.searchParams.has('list')) {
-          throw new Error('Playlist: "list" field not found')
+          return { urlType: 'unknown' }
         }
 
         const playlistId = url.searchParams.get('list')
@@ -435,12 +430,12 @@ const actions = {
           url.searchParams.delete('q')
         }
         if (searchQuery == null) {
-          throw new Error('Search: "search_query" field not found')
+          return { urlType: 'unknown' }
         }
 
         const searchSettings = state.searchSettings
         const query = {
-          sortBy: searchSettings.sortBy,
+          prioritize: searchSettings.prioritize,
           time: searchSettings.time,
           type: searchSettings.type,
           duration: searchSettings.duration,
@@ -509,10 +504,10 @@ const actions = {
         const match = url.pathname.match(channelPattern)
         const channelId = match.groups.channelId
         if (!channelId) {
-          throw new Error('Channel: could not extract id')
+          return { urlType: 'unknown' }
         }
 
-        let subPath = null
+        let subPath
         switch (match.groups.tab) {
           case 'shorts':
             subPath = 'shorts'
@@ -739,8 +734,8 @@ const mutations = {
     state.searchFilterValueChanged = value
   },
 
-  setSearchSortBy (state, value) {
-    state.searchSettings.sortBy = value
+  setSearchPrioritize (state, value) {
+    state.searchSettings.prioritize = value
   },
 
   setSearchTime (state, value) {
@@ -765,10 +760,6 @@ const mutations = {
 
   setRegionValues (state, value) {
     state.regionValues = value
-  },
-
-  setRecentBlogPosts (state, value) {
-    state.recentBlogPosts = value
   },
 
   setExternalPlayerNames (state, value) {

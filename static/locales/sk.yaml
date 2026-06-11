@@ -3,14 +3,14 @@ File: 'Súbor'
 Quit: 'Ukončiť'
 Edit: 'Upraviť'
 Undo: 'Vrátiť späť'
-Redo: 'Znovu vykonať'
+Redo: 'Vykonať znova'
 Cut: 'Vystrihnúť'
 Copy: 'Kopírovať'
 Paste: 'Vložiť'
 Delete: 'Vymazať'
 Select all: 'Vybrať všetko'
 Toggle Developer Tools: 'Prepnúť vývojárske nástroje'
-Actual size: 'Aktuálna veľkosť'
+Actual size: 'Reálna veľkosť'
 Zoom in: 'Priblížiť'
 Zoom out: 'Oddialiť'
 Toggle fullscreen: 'Prepnúť na celú obrazovku'
@@ -42,15 +42,13 @@ Search / Go to URL: 'Hľadať / Ísť na URL adresu'
   # In Filter Button
 Search Filters:
   Search Filters: 'Vyhľadávacie filtre'
-  Sort By:
-    Most Relevant: 'Najdôležitejšie'
-    Rating: 'Hodnotenie'
-    Upload Date: 'Dátum nahrávania'
-    View Count: 'Počet pozeraní'
+  Prioritize:
+    Most Relevant: 'Najrelevantnejšie'
+    Prioritize: Uprednostniť
+    Popularity: Popularita
   Time:
     Time: 'Čas'
     Any Time: 'Kedykoľvek'
-    Last Hour: 'Posledná hodina'
     Today: 'Dnes'
     This Week: 'Tento týždeň'
     This Month: 'Tento mesiac'
@@ -65,10 +63,9 @@ Search Filters:
   Duration:
     Duration: 'Trvanie'
     All Durations: 'Všetky trvania'
-    Short (< 4 minutes): 'Krátke (menej ako 4 minúty)'
-    Long (> 20 minutes): 'Dlhé (viac ako 20 minút)'
-  # On Search Page
-    Medium (4 - 20 minutes): Stredné (4 až 20 minút)
+    '< 3 minutes': 'menej ako 3 minúty'
+    '> 20 minutes': 'viac ako 20 minút'
+    '3 - 20 minutes': 3 až 20 minút
   Search Results: 'Výsledky vyhľadávania'
   Fetching results. Please wait: 'Načítavanie výsledkov. Čakajte, prosím'
   Fetch more results: 'Načítať viac výsledkov'
@@ -227,7 +224,6 @@ Settings:
       Blur: Rozmazané
     Region for Trending: 'Región pre trendy'
         #! List countries
-    Check for Latest Blog Posts: Kontrolovať najnovšie príspevky na blogu
     Check for Updates: Kontrolovať aktualizácie
     View all Invidious instance information: Zobraziť všetky informácie o inštancii Invidious
     System Default: Podľa systému
@@ -407,10 +403,14 @@ Settings:
       File Name Label: Vzor názvu súboru
       Folder Button: Vybrať priečinok
       Folder Label: Priečinok snímky obrazovky
-      Ask Path: Spýtať sa na priečinok uloženia
+      Modes:
+        Ask Path: Spýtať sa na priečinok uloženia
+        Save To Folder: Uložiť do priečinka
+        Clipboard: Kopírovať do schránky
       Quality Label: Kvalita snímky obrazovky
       Format Label: Formát snímky obrazovky
       Enable: Povoliť snímku obrazovky
+      Mode: Režim snímky obrazovky
     Video Playback Rate Interval: Interval rýchlosti prehrávania videa
     Max Video Playback Rate: Maximálna rýchlosť prehrávania videa
     Autoplay Interruption Timer: Časovač prerušenia automatického prehrávania
@@ -621,21 +621,20 @@ About:
   Report a problem: Nahlásiť problém
   FAQ: Otázky a odpovede
   Donate: Darujte
-  FreeTube is made possible by: FreeTube existuje vďaka
   these people and projects: týmto ľuďom a projektom
   Credits: Zásluhy
   Translate: Preložiť
   room rules: pravidlá miestností
-  Please read the: Prečítajte si
   Chat on Matrix: Napíšte nám na Matrix-e
   Mastodon: Komunikačná platforma Mastodon
   Email: Elektronická pošta
-  Blog: Blog
   Website: Webstránka
   Please check for duplicates before posting: Pred odoslaním prosím skontrolujte duplicitné otázky
   Discussions: Diskusie
   AGPLv3: AGPLv3
-  Licensed under the: Licencované pod
+  Licensed under the {licenseLink}: Licencované pod {licenseLink}
+  Please read the {roomRulesLink}: Prečítajte si prosím {roomRulesLink}
+  FreeTube is made possible by {creditsPageLink}: FreeTube existuje vďaka {creditsPageLink}
 Channel:
   Subscribe: 'Odoberať'
   Unsubscribe: 'Odhlásiť odber'
@@ -975,8 +974,7 @@ Profile:
   Create Profile Name: Vytvoriť názov profilu
   Edit Profile Name: Upraviť názov profilu
   Toggle Profile List: Prepnúť zoznam profilov
-A new blog is now available, {blogTitle}. Click to view more: 'Dostupný nový článok na blogu: {blogTitle}. Kliknite pre viac info'
-Download From Site: Stiahnuť z webu
+Download From Site: Stiahnuť zo stránky
 Version {versionNumber} is now available!  Click for more details: Verzia {versionNumber} je k dispozícii! Kliknite pre viac podrobností
 Locale Name: Slovenčina
 Playing Next Video Interval: Prehrávanie ďalšieho videa okamžite. Kliknite pre zrušenie. | Prehrávanie ďalšieho videa o {nextVideoInterval} sekundu. Kliknite pre zrušenie. | Prehrávanie ďalšieho videa o {nextVideoInterval} sekúnd. Kliknite pre zrušenie.
@@ -998,7 +996,7 @@ Channels:
   Search bar placeholder: Vyhľadať kanály
   Empty: Váš zoznam kanálov je momentálne prázdny.
   Unsubscribe Prompt: Určite sa chcete odhlásiť z odberu "{channelName}"?
-Preferences: Predvoľby
+Preferences: Preferencie
 Close Banner: Zatvoriť banner
 Search character limit: Hľadaný výraz presahuje povolený limit {searchCharacterLimit} znakov
 Search Listing:
@@ -1112,3 +1110,5 @@ Clipboard:
 Tag already exists: Označenie "{tagName}" už existuje
 Compact side navigation: Kompaktná bočná navigácia
 Expand side navigation: Rozbaliť bočnú navigáciu
+Screenshot Clipboard Success: Snímka obrazovky uložená do schránky
+Screenshot Clipboard Error: Kopírovanie snímky obrazovky do schránky sa nepodarilo

@@ -10,12 +10,13 @@ import WatchVideoChapters from '../../components/WatchVideoChapters/WatchVideoCh
 import WatchVideoDescription from '../../components/WatchVideoDescription/WatchVideoDescription.vue'
 import CommentSection from '../../components/CommentSection/CommentSection.vue'
 import WatchVideoLiveChat from '../../components/WatchVideoLiveChat/WatchVideoLiveChat.vue'
-import WatchVideoPlaylist from '../../components/watch-video-playlist/watch-video-playlist.vue'
+import WatchVideoPlaylist from '../../components/WatchVideoPlaylist/WatchVideoPlaylist.vue'
 import WatchVideoQueue from '../../components/watch-video-queue/watch-video-queue.vue'
 import WatchVideoRecommendations from '../../components/WatchVideoRecommendations/WatchVideoRecommendations.vue'
 import FtAgeRestricted from '../../components/FtAgeRestricted/FtAgeRestricted.vue'
-import packageDetails from '../../../../package.json'
+import { calculateColorLuminance } from '../../helpers/colors'
 import {
+  buildChaptersVttFile,
   buildVTTFileLocally,
   copyToClipboard,
   extractNumberFromString,
@@ -24,7 +25,6 @@ import {
   showToast
 } from '../../helpers/utils'
 import {
-  formatHasVoiceBoostTag,
   getLocalVideoInfo,
   mapLocalLegacyFormat,
   parseLocalSubscriberCount,
@@ -59,6 +59,10 @@ import { MANIFEST_TYPE_SABR } from '../../helpers/player/SabrManifestParser'
 
 const MANIFEST_TYPE_DASH = 'application/dash+xml'
 const MANIFEST_TYPE_HLS = 'application/x-mpegurl'
+const UNAVAILABLE_VIDEO_THUMBNAILS = {
+  light: 'https://www.youtube.com/img/desktop/unavailable/unavailable_video.png',
+  dark: 'https://www.youtube.com/img/desktop/unavailable/unavailable_video_dark_theme.png'
+}
 
 export default defineComponent({
   name: 'Watch',
@@ -343,6 +347,16 @@ export default defineComponent({
       // `this.$refs.player?.hasLoaded` cannot be used in computed property
       return !this.isLoading
     },
+
+    chaptersSrc() {
+      if (this.videoChapters.length > 0) {
+        const vttText = buildChaptersVttFile(this.videoChapters)
+
+        return `data:text/vtt,${encodeURIComponent(vttText)}`
+      } else {
+        return ''
+      }
+    }
   },
   watch: {
     async $route() {
@@ -381,18 +395,11 @@ export default defineComponent({
 
       // react to route changes...
       this.videoId = this.$route.params.id
+      this.resetVideoState()
 
       this.firstLoad = true
       this.videoPlayerLoaded = false
-      this.errorMessage = null
-      this.customErrorIcon = null
       this.activeFormat = this.defaultVideoFormat
-      this.sabrData = null
-      this.videoStoryboardSrc = ''
-      this.captions = []
-      this.vrProjection = null
-      this.videoCurrentChapterIndex = 0
-      this.videoGenreIsMusic = false
 
       this.checkIfTimestamp()
       this.checkIfPlaylist()
@@ -406,6 +413,53 @@ export default defineComponent({
           break
       }
     },
+
+    resetVideoState: function () {
+      this.isLoading = true
+      this.isFamilyFriendly = false
+      this.isLive = false
+      this.liveChat = null
+      this.isLiveContent = false
+      this.isUpcoming = false
+      this.isPostLiveDvr = false
+      this.isUnlisted = false
+      this.upcomingTimestamp = null
+      this.upcomingTimeLeft = null
+      this.thumbnail = ''
+      this.videoTitle = ''
+      this.videoDescription = ''
+      this.videoDescriptionHtml = ''
+      this.license = ''
+      this.videoViewCount = 0
+      this.videoLikeCount = 0
+      this.videoDislikeCount = 0
+      this.videoLengthSeconds = 0
+      this.videoChapters = []
+      this.videoCurrentChapterIndex = 0
+      this.videoChaptersKind = 'chapters'
+      this.channelName = ''
+      this.channelThumbnail = ''
+      this.channelId = ''
+      this.channelSubscriptionCountText = ''
+      this.videoPublished = 0
+      this.premiereDate = undefined
+      this.videoStoryboardSrc = ''
+      this.manifestSrc = null
+      this.manifestMimeType = MANIFEST_TYPE_DASH
+      this.sabrData = null
+      this.legacyFormats = []
+      this.captions = []
+      this.vrProjection = null
+      this.recommendedVideos = []
+      this.playabilityStatus = ''
+      this.adEndTimeUnixMs = 0
+      this.errorMessage = null
+      this.customErrorIcon = null
+      this.videoGenreIsMusic = false
+      this.streamingDataExpiryDate = null
+      this.updateTitle()
+    },
+
     onMountedDependOnLocalStateLoading() {
       // Prevent running twice
       if (this.onMountedRun) { return }
@@ -494,26 +548,14 @@ export default defineComponent({
 
         this.isFamilyFriendly = result.basic_info.is_family_safe
 
-        const recommendedVideos = result.watch_next_feed
+        this.recommendedVideos = result.watch_next_feed
           ?.filter((item) => {
             return item.type === 'CompactVideo' || item.type === 'CompactMovie' ||
               (item.type === 'LockupView' && item.content_type === 'VIDEO')
           })
-          .map(parseLocalWatchNextVideo) ?? []
-
-        // place watched recommended videos last (single-pass partition)
-        {
-          const unwatched = []
-          const watched = []
-          for (const video of recommendedVideos) {
-            if (this.isRecommendedVideoWatched(video.videoId)) {
-              watched.push(video)
-            } else {
-              unwatched.push(video)
-            }
-          }
-          this.recommendedVideos = [...unwatched, ...watched]
-        }
+          .map(parseLocalWatchNextVideo).filter(_ => _)
+          // place watched recommended videos last
+          .sort(this.sortWatchedVideosLast) ?? []
 
         if (this.showFamilyFriendlyOnly && !this.isFamilyFriendly) {
           this.isLoading = false
@@ -522,7 +564,7 @@ export default defineComponent({
         }
 
         // extract localised title first and fall back to the not localised one
-        this.videoTitle = result.primary_info?.title.text ?? result.basic_info.title
+        this.videoTitle = result.primary_info?.title.text?.trim() ?? result.basic_info.title?.trim()
         this.videoViewCount = result.basic_info.view_count ?? (result.primary_info.view_count ? extractNumberFromString(result.primary_info.view_count.text) : null)
         this.license = result.secondary_info.metadata.rows.find(element => element.title?.text === 'License')?.contents[0]?.text
 
@@ -602,6 +644,7 @@ export default defineComponent({
         }
 
         let chapters = []
+        let chaptersKind = 'chapters'
         if (!this.hideChapters) {
           const rawChapters = result.player_overlays?.decorated_player_bar?.player_bar?.markers_map
             ?.find(marker => marker.marker_key === 'DESCRIPTION_CHAPTERS')?.value.chapters
@@ -635,7 +678,7 @@ export default defineComponent({
                   })
                 }
               }
-              this.videoChaptersKind = 'keyMoments'
+              chaptersKind = 'keyMoments'
             } else {
               chapters = this.extractChaptersFromDescription(result.basic_info.short_description ?? result.secondary_info.description.text)
             }
@@ -653,6 +696,7 @@ export default defineComponent({
         }
 
         this.videoChapters = chapters
+        this.videoChaptersKind = chaptersKind
 
         const playabilityStatus = result.playability_status
         this.playabilityStatus = playabilityStatus.status
@@ -932,16 +976,21 @@ export default defineComponent({
         this.updateTitle()
         this.schedulePrefetchNextInQueue()
       } catch (err) {
-        const errorMessage = this.$t('Local API Error (Click to copy)')
-        showToast(`${errorMessage}: ${err}`, 10000, () => {
-          copyToClipboard(err)
-        })
         console.error(err)
-        if (this.backendPreference === 'local' && this.backendFallback && !err.toString().includes('private')) {
+        if (this.backendPreference === 'local' && this.backendFallback && !err.toString().includes('private') && !err.toString().includes('unavailable')) {
+          const errorMessage = this.$t('Local API Error (Click to copy)')
+          showToast(`${errorMessage}: ${err}`, 10000, () => {
+            copyToClipboard(err)
+          })
           showToast(this.$t('Falling back to Invidious API'))
           this.getVideoInformationInvidious()
         } else {
           this.isLoading = false
+
+          if (!this.thumbnail) {
+            this.thumbnail = this.getUnavailableVideoThumbnail()
+          }
+          this.errorMessage = err.message || err.toString()
         }
       }
     },
@@ -999,19 +1048,9 @@ export default defineComponent({
             }
           })
 
-          // place watched recommended videos last (single-pass partition)
-          {
-            const unwatched = []
-            const watched = []
-            for (const video of recommendedVideos) {
-              if (this.isRecommendedVideoWatched(video.videoId)) {
-                watched.push(video)
-              } else {
-                unwatched.push(video)
-              }
-            }
-            this.recommendedVideos = [...unwatched, ...watched]
-          }
+          // place watched recommended videos last
+          this.recommendedVideos = recommendedVideos.sort(this.sortWatchedVideosLast)
+
           this.isLive = result.liveNow
           this.isFamilyFriendly = result.isFamilyFriendly
           this.isPostLiveDvr = !!result.isPostLiveDvr
@@ -1060,6 +1099,7 @@ export default defineComponent({
             }
           }
           this.videoChapters = chapters
+          this.videoChaptersKind = 'chapters'
 
           if (this.isLive || this.isPostLiveDvr) {
             // The live DASH manifest is currently unusable as it returns 403s after 1 minute of playback
@@ -1128,16 +1168,20 @@ export default defineComponent({
         })
         .catch(err => {
           console.error(err)
-          const errorMessage = this.$t('Invidious API Error (Click to copy)')
-          showToast(`${errorMessage}: ${err}`, 10000, () => {
-            copyToClipboard(err)
-          })
-          console.error(err)
           if (process.env.SUPPORTS_LOCAL_API && this.backendPreference === 'invidious' && this.backendFallback) {
+            const errorMessage = this.$t('Invidious API Error (Click to copy)')
+            showToast(`${errorMessage}: ${err}`, 10000, () => {
+              copyToClipboard(err)
+            })
             showToast(this.$t('Falling back to Local API'))
             this.getVideoInformationLocal()
           } else {
             this.isLoading = false
+
+            if (!this.thumbnail) {
+              this.thumbnail = this.getUnavailableVideoThumbnail()
+            }
+            this.errorMessage = err.message || err.toString()
           }
         })
     },
@@ -1146,6 +1190,15 @@ export default defineComponent({
       const expireString = new URL(url).searchParams.get('expire')
 
       return new Date(parseInt(expireString) * 1000)
+    },
+
+    getUnavailableVideoThumbnail: function () {
+      const backgroundColor = window.getComputedStyle(document.body).backgroundColor
+      const isLightTheme = calculateColorLuminance(backgroundColor) === '#000000'
+
+      return isLightTheme
+        ? UNAVAILABLE_VIDEO_THUMBNAILS.light
+        : UNAVAILABLE_VIDEO_THUMBNAILS.dark
     },
 
     /**
@@ -1277,8 +1330,25 @@ export default defineComponent({
       })
     },
 
+    /**
+     * @param {{ videoId: string }} a
+     * @param {{ videoId: string }} b
+     */
+    sortWatchedVideosLast: function (a, b) {
+      const aWasWatched = this.isRecommendedVideoWatched(a.videoId)
+      const bWasWatched = this.isRecommendedVideoWatched(b.videoId)
+
+      if (aWasWatched && !bWasWatched) {
+        return 1
+      } else if (!aWasWatched && bWasWatched) {
+        return -1
+      } else {
+        return 0
+      }
+    },
+
     isRecommendedVideoWatched: function (videoId) {
-      return !!this.$store.getters.getHistoryCacheById[videoId]
+      return Object.hasOwn(this.$store.getters.getHistoryCacheById, videoId)
     },
 
     handleVideoLoaded: function () {
@@ -1531,9 +1601,6 @@ export default defineComponent({
 
     handleRouteChange: function () {
       this.abortAutoplayCountdown(true)
-      this.videoChapters = []
-      this.videoChaptersKind = 'chapters'
-
       this.handleWatchProgressAutoSave()
     },
 
@@ -1669,7 +1736,7 @@ export default defineComponent({
           audioSampleRate: format.audio_sample_rate,
           audioChannels: format.audio_channels,
           isDrc: format.is_drc,
-          isVoiceBoost: formatHasVoiceBoostTag(format),
+          isVoiceBoost: format.is_vb,
           isOriginal: format.is_original,
           isDubbed: format.is_dubbed,
           isAutoDubbed: format.is_auto_dubbed,
@@ -1681,6 +1748,7 @@ export default defineComponent({
           colorPrimaries: format.color_info?.primaries
         })),
         captions: this.captions,
+        chapters: this.videoChapters,
         storyboards
       }
 
@@ -1741,10 +1809,10 @@ export default defineComponent({
      * @param {Intl.DisplayNames} languageNames
      */
     generateAudioTrackFieldInvidious: function (format, languageNames) {
-      let type = ''
+      let type
 
       // use the same id numbers as YouTube (except -1, when we aren't sure what it is)
-      let idNumber = ''
+      let idNumber
 
       if (format.is_descriptive) {
         type = ' descriptive'
@@ -1883,28 +1951,13 @@ export default defineComponent({
       return Math.floor(this.getWatchedProgress())
     },
 
-    getPlaylistIndex: function () {
-      return this.$refs.watchVideoPlaylist
-        ? this.getPlaylistReverse()
-          ? this.$refs.watchVideoPlaylist.playlistItems.length - this.$refs.watchVideoPlaylist.currentVideoIndexOneBased
-          : this.$refs.watchVideoPlaylist.currentVideoIndexZeroBased
-        : -1
-    },
-
-    getPlaylistReverse: function () {
-      return this.$refs.watchVideoPlaylist ? this.$refs.watchVideoPlaylist.reversePlaylist : false
-    },
-
-    getPlaylistShuffle: function () {
-      return this.$refs.watchVideoPlaylist ? this.$refs.watchVideoPlaylist.shuffleEnabled : false
-    },
-
-    getPlaylistLoop: function () {
-      return this.$refs.watchVideoPlaylist ? this.$refs.watchVideoPlaylist.loopEnabled : false
+    getPlaylistState: function () {
+      return this.$refs.watchVideoPlaylist?.getState() ??
+        { index: -1, reverse: false, shuffle: false, loop: false }
     },
 
     updateTitle: function () {
-      this.setAppTitle(`${this.videoTitle} - ${packageDetails.productName}`)
+      this.setAppTitle(this.videoTitle)
     },
 
     isHiddenVideo: function (forbiddenTitles, channelsHiddenNames, video) {

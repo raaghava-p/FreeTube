@@ -28,15 +28,13 @@ Search / Go to URL: 'Buscar / Ir a URL'
   # In Filter Button
 Search Filters:
   Search Filters: 'Filtros de búsqueda'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Más relevante'
-    Rating: 'Clasificación'
-    Upload Date: 'Fecha de carga'
-    View Count: 'Conteo de visitas'
+    Prioritize: Priorizar
+    Popularity: Popularidad
   Time:
     Time: 'Hora'
     Any Time: 'En cualquier momento'
-    Last Hour: 'Última hora'
     Today: 'Hoy'
     This Week: 'Esta semana'
     This Month: 'Este mes'
@@ -51,10 +49,9 @@ Search Filters:
   Duration:
     Duration: 'Duración'
     All Durations: 'Todas las duraciones'
-    Short (< 4 minutes): 'Corto (< 4 minutos)'
-    Long (> 20 minutes): 'Larga (> 20 minutos)'
-  # On Search Page
-    Medium (4 - 20 minutes): Media (4 - 20 minutos)
+    '< 3 minutes': '< 3 minutos'
+    '> 20 minutes': '> 20 minutos'
+    '3 - 20 minutes': 3 - 20 minutos
   Search Results: 'Resultados de la búsqueda'
   Fetching results. Please wait: 'Obteniendo resultados. Por favor esperá'
   Fetch more results: 'Obtener más resultados'
@@ -69,6 +66,7 @@ Search Filters:
     Live: En vivo
     Location: Ubicación
     HDR: HDR
+    4K: 4k
 Subscriptions:
     # On Subscriptions Page
   Subscriptions: 'Suscripciones'
@@ -86,6 +84,7 @@ Trending:
   Trending: 'Tendencias'
   Gaming: Juegos
   Trending Tabs: Lo más destacado
+  Sports: Deportes
 Most Popular: 'Más popular'
 Playlists: 'Listas de reproducción'
 User Playlists:
@@ -205,7 +204,6 @@ Settings:
     Region for Trending: 'Región para Tendencias'
         #! List countries
     View all Invidious instance information: Ver toda la información sobre la instancia de Invidious
-    Check for Latest Blog Posts: Buscar nuevas entradas de blogs
     Check for Updates: Buscar actualizaciones
     Set Current Instance as Default: Definir Instancia Actual como Por Defecto
     Clear Default Instance: Limpiar Instancia Por Defecto
@@ -325,7 +323,8 @@ Settings:
       Folder Button: Seleccionar carpeta
       Format Label: Formato de las capturas de pantalla
       Enable: Habilitar capturas de pantalla
-      Ask Path: Solicitar Carpeta de Guardado
+      Modes:
+        Ask Path: Solicitar Carpeta de Guardado
       Quality Label: Calidad de Captura de Pantalla
       File Name Tooltip: 'Podés utilizar las siguientes variables: %Y Año (4 dígitos). %M Mes (2 dígitos). %D Día (2 dígitos). %H Hora (2 dígitos). %N Minuto (2 dígitos). %S Segundo (2 dígitos). %T Milisegundo (3 dígitos). %s Segundo del Video. %t Milisegundo del Video (3 dígitos). %i ID del Video.'
       File Name Label: Formato de Nombre de Archivo
@@ -508,7 +507,6 @@ About:
   #On About page
   Website: Sitio web
   Email: Correo electrónico
-  Blog: Blog
 Channel:
   Videos: {}
   Playlists: {}
@@ -518,7 +516,6 @@ Channel:
     Details: Detalles
 Yes: 'Sí'
 No: 'No'
-A new blog is now available, {blogTitle}. Click to view more: 'Un nuevo blog está disponible, {blogTitle}. Hacé clic para ver más'
 Download From Site: Descargar desde el sitio
 Version {versionNumber} is now available!  Click for more details: La versión {versionNumber} ya está disponible. Hacé clic acá para más detalles
 More: Más

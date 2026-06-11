@@ -30,7 +30,6 @@ Close Banner: 'Sluit baniere'
 
 Version {versionNumber} is now available!  Click for more details: 'Weergawe {versionNumber} is nou beskikbaar! Klik vir meer besonderhede'
 Download From Site: 'Laai af van die webwerf'
-A new blog is now available, {blogTitle}. Click to view more: '''n Nuwe blog is nou beskikbaar, {blogTitle}. Klik om meer te sien'
 Are you sure you want to open this link?: 'Is jy seker jy wil hierdie skakel oopmaak?'
 
 # Global
@@ -70,15 +69,11 @@ Search Listing:
     8K: 8K
 Search Filters:
   Search Filters: 'Soekfilters'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Mees relevant'
-    Rating: 'Gradering'
-    Upload Date: 'Oplaaddatum'
-    View Count: 'Beskouingsaantal'
   Time:
     Time: 'Tyd'
     Any Time: 'Enige tyd'
-    Last Hour: 'Laaste uur'
     Today: 'Vandag'
     This Week: 'Hierdie week'
     This Month: 'Hierdie maand'
@@ -93,9 +88,9 @@ Search Filters:
   Duration:
     Duration: 'Duur'
     All Durations: 'Alle durasies'
-    Short (< 4 minutes): 'Kort (<4 minute)'
-    Medium (4 - 20 minutes): 'Medium (4 - 20 minute)'
-    Long (> 20 minutes): 'Lank (> 20 minute)'
+    '< 3 minutes': '<3 minute'
+    '3 - 20 minutes': '3 - 20 minute'
+    '> 20 minutes': '> 20 minute'
   Features:
     Features: 'Funksies'
     HD: 'HD'
@@ -128,7 +123,7 @@ Subscriptions:
   Load More Posts: ''
   Subscriptions Tabs: ''
   All Subscription Tabs Hidden: ''
-More: ''
+More: 'Meer'
 Channels:
   Channels: ''
   Title: ''
@@ -141,7 +136,7 @@ Trending:
   Gaming: ''
   Trending Tabs: ''
   Sports: Sport
-Most Popular: ''
+Most Popular: 'Mees Populêr'
 Feed:
   Feed Last Updated: ''
   Refresh Feed: ''
@@ -256,7 +251,6 @@ Settings:
   General Settings:
     General Settings: ''
     Check for Updates: ''
-    Check for Latest Blog Posts: ''
     Fallback to Non-Preferred Backend on Failure: 'Val terug op nie-voorkeur agterent by faling'
     Enable Search Suggestions: 'Aktiveer soekvoorstelle'
     Auto Load Next Page:
@@ -453,7 +447,8 @@ Settings:
       Enable: 'Aktiveer skermkiekie'
       Format Label: 'Skermkiekieformaat'
       Quality Label: 'Skermkiekiekwaliteit'
-      Ask Path: 'Vra watter vouer om in te bewaar'
+      Modes:
+        Ask Path: 'Vra watter vouer om in te bewaar'
       Folder Label: 'Skermkiekievouer'
       Folder Button: 'Kies vouer'
       File Name Label: 'Lêernaampatroon'
@@ -643,7 +638,6 @@ About:
   About: 'Oor'
   Beta: 'Beta'
   Source code: 'Bronkode'
-  Licensed under the: 'Gelisensieer onder die'
   AGPLv3: 'AGPLv3'
   Downloads / Changelog: 'Aflaaie / Veranderingslogboek'
   GitHub releases: 'GitHub-vrystellings'
@@ -655,15 +649,12 @@ About:
   GitHub issues: 'GitHub-probleme'
   Please check for duplicates before posting: 'Gaan na vir duplikate voor u dit plaas'
   Website: 'Webwerf'
-  Blog: 'Woernaal'
   Email: 'E-pos'
   Mastodon: 'Mastodon'
   Chat on Matrix: 'Klets op Matrix'
-  Please read the: 'Lees asb. die'
   room rules: 'kamerreëls'
   Translate: 'Vertaal'
   Credits: 'Danksegging'
-  FreeTube is made possible by: 'FreeTube is moontlik gemaak deur'
   these people and projects: 'hierdie mense en projekte'
   Donate: 'Skenk'
 
@@ -999,7 +990,7 @@ Invidious API Error (Click to copy): 'Invidious API-fout (Klik om te kopieer)'
 Falling back to Invidious API: 'Val terug op Invidious API'
 Falling back to Local API: 'Val terug op lokale API'
 This video is unavailable because of missing formats. This can happen due to country unavailability.: 'Hierdie video is onbeskikbaar vanweë ontbrekende formate. Dit kan gebeur weens video-onbeskikbaarheid in u land.'
-Unknown YouTube url type, cannot be opened in app: 'Onbekende YouTube-URL; die URL kan nie in die toep geopen word nie'
+Unknown YouTube url type, cannot be opened in app: 'Onbekende YouTube-bronadres, die URL kan nie in die toep geopen word nie'
 Loop is now disabled: 'Herhaling is nou gedeaktiveer'
 Loop is now enabled: 'Herhaling is nou geaktiveer'
 Shuffle is now disabled: 'Skommel is nou gedeaktiveer'

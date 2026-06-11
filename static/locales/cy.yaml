@@ -29,7 +29,6 @@ Go to page: 'Mynd i {page}'
 
 Version {versionNumber} is now available!  Click for more details: 'Mae Fersiwn {versionNumber} bellach ar gael!  Cliciwch am fwy o manylion'
 Download From Site: 'Llwytho i lawr o''r Wefan'
-A new blog is now available, {blogTitle}. Click to view more: 'Mae blogiad newydd bellach ar gael, {blogTitle}. Cliciwch i weld mwy'
 Are you sure you want to open this link?: 'Ydych chi wir eisiau agor y ddolen hon?'
 
 # Global
@@ -57,15 +56,13 @@ Search Bar:
   Remove: Tynnu
 Search Filters:
   Search Filters: 'Hidlyddion Chwilio'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Mwyaf Perthnasol'
-    Rating: 'Sgôr'
-    Upload Date: 'Dyddiad Llwytho i Fyny'
-    View Count: 'Cyfrif Golygon'
+    Prioritize: Blaenoriaethu
+    Popularity: Poblogrwydd
   Time:
     Time: 'Amser'
     Any Time: 'Unrhyw Bryd'
-    Last Hour: 'Yr Awr Diwethaf'
     Today: 'Heddiw'
     This Week: 'Wythnos Yma'
     This Month: 'Mis Yma'
@@ -80,9 +77,9 @@ Search Filters:
   Duration:
     Duration: 'Hyd'
     All Durations: 'Pob Hyd'
-    Short (< 4 minutes): 'Byr (< 4 munud)'
-    Medium (4 - 20 minutes): 'Canolig (4 - 20 munud)'
-    Long (> 20 minutes): 'Hir (> 20 munud)'
+    '< 3 minutes': '< 3 munud'
+    '3 - 20 minutes': '3 - 20 munud'
+    '> 20 minutes': '> 20 munud'
   # On Search Page
   Search Results: 'Canlyniadau Chwilio'
   Fetching results. Please wait: 'Wrthi''n nôl canlyniadau. Arhoswch os gwelwch yn dda'
@@ -231,7 +228,6 @@ Settings:
   General Settings:
     General Settings: 'Cyffredinol'
     Check for Updates: 'Chwilio am Ddiweddariadau'
-    Check for Latest Blog Posts: 'Gwirio am y Postiadau Blog Diweddaraf'
     Fallback to Non-Preferred Backend on Failure: 'Nôl i''r Cefn Diddewis ar Fethiant'
     Enable Search Suggestions: 'Galluogi Awgrymiadau Chwilio'
     Default Landing Page: 'Tudalen Glanio Ragosodedig'
@@ -432,7 +428,8 @@ Settings:
       Enable: 'Galluogi Lluniau Sgrin'
       Format Label: 'Fformat Lluniau Sgrin'
       Quality Label: 'Ansawdd Llun Sgrin'
-      Ask Path: 'Gofyn am Ffolder Cadw'
+      Modes:
+        Ask Path: 'Gofyn am Ffolder Cadw'
       Folder Label: 'Ffolder Llun Sgrin'
       Folder Button: 'Dewis Ffolder'
       File Name Label: 'Patrwm Enw Ffeil'
@@ -588,7 +585,7 @@ Settings:
     Clicking on Test Proxy will send a request to: 'Bydd clicio ar Test Proxy yn anfon cais at'
     Test Proxy: 'Profi Dirprwy'
     Your Info: 'Eich Manylion'
-    Ip: 'IP'
+    Ip: 'Ip'
     Country: 'Gwlad'
     Region: 'Rhanbarth'
     City: 'Dinas'
@@ -646,20 +643,19 @@ About:
   GitHub issues: 'Materion GitHub'
   Please check for duplicates before posting: 'Gwirio am ddyblygiadau cyn postio'
   Website: 'Gwefan'
-  Blog: 'Blog'
   Email: 'E-bost'
   Mastodon: 'Mastodon'
   Chat on Matrix: 'Sgwrsio ar Matrix'
-  Please read the: 'Darllenwch y'
   room rules: 'rheolau ystafell'
   Translate: 'Cyfieithu'
   Credits: 'Cydnabyddiaeth'
-  FreeTube is made possible by: 'Mae FreeTube yn bosibl oherwydd gwaith'
   these people and projects: 'y bobl a''r projectau hyn'
   Donate: 'Cyfrannu'
 
-  Licensed under the: Trwyddedig o dan y
   AGPLv3: AGPLv3
+  Licensed under the {licenseLink}: Trwyddedwyd o dan {licenseLink}
+  FreeTube is made possible by {creditsPageLink}: Mae Freetube ar gael oherwydd {creditsPageLink}
+  Please read the {roomRulesLink}: Darllenwch y {roomRulesLink}
 Profile:
   Profile Settings: 'Proffil'
   Toggle Profile List: 'Toglo Rhestr Proffil'
@@ -875,6 +871,10 @@ Video:
 #& Playlists
   Save Watched Progress: Cadw Cynnydd Gwylio
   Watched Progress Saved: Cynnydd Gwylio Wedi'i Gadw
+  Popout Live Chat: Llamlen Sgwrs
+  Watch:
+    'Remaining preroll-ad time: {remindingTimeSeconds}s': 'Amser hysbysiadau cyn cyflwyniad: {remindingTimeSeconds}s'
+    'Remaining SABR backoff time: {remindingTimeSeconds}s': "Amser cefnu SABR sy'n weddill: {remindingTimeSeconds}s"
 Playlist:
   #& About
   Playlist: 'Rhestr chwarae'
@@ -1118,5 +1118,5 @@ Keys:
 Right-click or hold to see history: De-gliciwch neu ddal i weld yr hanes
 Autoplay Interruption Timer: Diddymwyd awtochwarae oherwydd {autoplayInterruptionIntervalHours} awr o heb ei ddefnyddio
 shortcutLabelSeparator: ｜
-Compact side navigation: LLywio ochr cryno
+Compact side navigation: Ochr llywio cryno
 Expand side navigation: Ehangu llywio ochr

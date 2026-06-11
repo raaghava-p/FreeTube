@@ -34,8 +34,6 @@ Close Banner: Close Banner
 Version {versionNumber} is now available!  Click for more details: Version {versionNumber} is now available!  Click
   for more details
 Download From Site: Download From Site
-A new blog is now available, {blogTitle}. Click to view more: A new blog is now available, {blogTitle}.
-  Click to view more
 Are you sure you want to open this link?: Are you sure you want to open this link?
 
 # Global
@@ -75,15 +73,13 @@ Search Listing:
   # In Filter Button
 Search Filters:
   Search Filters: Search Filters
-  Sort By:
+  Prioritize:
+    Prioritize: Prioritize
     Most Relevant: Most Relevant
-    Rating: Rating
-    Upload Date: Upload Date
-    View Count: View Count
+    Popularity: Popularity
   Time:
     Time: Time
     Any Time: Any Time
-    Last Hour: Last Hour
     Today: Today
     This Week: This Week
     This Month: This Month
@@ -98,9 +94,9 @@ Search Filters:
   Duration:
     Duration: Duration
     All Durations: All Durations
-    Short (< 4 minutes): Short (< 4 minutes)
-    Medium (4 - 20 minutes): Medium (4 - 20 minutes)
-    Long (> 20 minutes): Long (> 20 minutes)
+    '< 3 minutes': < 3 minutes
+    '3 - 20 minutes': 3 - 20 minutes
+    '> 20 minutes': '> 20 minutes'
   Features:
     Features: Features
     HD: HD
@@ -275,7 +271,6 @@ Settings:
   General Settings:
     General Settings: General
     Check for Updates: Check for Updates
-    Check for Latest Blog Posts: Check for Latest Blog Posts
     Fallback to Non-Preferred Backend on Failure: Fallback to Non-Preferred Backend
       on Failure
     Enable Search Suggestions: Enable Search Suggestions
@@ -481,9 +476,13 @@ Settings:
       8k: 8k
     Screenshot:
       Enable: Enable Screenshot
+      Mode: Screenshot Mode
+      Modes:
+        Ask Path: Ask for Save Folder
+        Save To Folder: Save to Folder
+        Clipboard: Copy to Clipboard
       Format Label: Screenshot Format
       Quality Label: Screenshot Quality
-      Ask Path: Ask for Save Folder
       Folder Label: Screenshot Folder
       Folder Button: Select Folder
       File Name Label: Filename Pattern
@@ -690,7 +689,7 @@ About:
   About: About
   Beta: Beta
   Source code: Source code
-  Licensed under the: Licensed under the
+  Licensed under the {licenseLink}: Licensed under the {licenseLink}
   AGPLv3: AGPLv3
   Downloads / Changelog: Downloads / Changelog
   GitHub releases: GitHub Releases
@@ -702,15 +701,14 @@ About:
   GitHub issues: GitHub issues
   Please check for duplicates before posting: Please check for duplicates before posting
   Website: Website
-  Blog: Blog
   Email: Email
   Mastodon: Mastodon
   Chat on Matrix: Chat on Matrix
-  Please read the: Please read the
+  Please read the {roomRulesLink}: Please read the {roomRulesLink}
   room rules: room rules
   Translate: Translate
   Credits: Credits
-  FreeTube is made possible by: FreeTube is made possible by
+  FreeTube is made possible by {creditsPageLink}: FreeTube is made possible by {creditsPageLink}
   these people and projects: these people and projects
   Donate: Donate
 
@@ -1138,7 +1136,9 @@ Age Restricted:
   This video is age restricted: This video is age restricted
 External link opening has been disabled in the general settings: 'External link opening has been disabled in the general settings'
 Screenshot Success: Saved screenshot
+Screenshot Clipboard Success: Saved screenshot to clipboard
 Screenshot Error: Screenshot failed. {error}
+Screenshot Clipboard Error: Screenshot copy to clipboard failed
 Channel Hidden: '{channel} added to channel filter'
 Channel Unhidden: '{channel} removed from channel filter'
 Trimmed input must be at least N characters long: Trimmed input must be at least 1 character long | Trimmed input must be at least {length} characters long

@@ -14,7 +14,10 @@
           @change="handleProfileFilterChange"
         />
       </FtFlexBox>
-      <p class="selected">
+      <p
+        v-if="showUnsubscribeButton"
+        class="selected"
+      >
         {{ selectedText }}
       </p>
       <FtFlexBox>
@@ -24,12 +27,14 @@
           :channel-id="channel.id"
           :channel-name="channel.name"
           :channel-thumbnail="channel.thumbnail"
-          selectable
-          :selected="selected.includes(channel.id)"
+          :selectable="showUnsubscribeButton"
+          :selected="selected.has(channel.id)"
           @change="handleChannelToggle(channel.id)"
         />
       </FtFlexBox>
-      <FtFlexBox>
+      <FtFlexBox
+        v-if="showUnsubscribeButton"
+      >
         <FtButton
           :label="$t('Profile.Select All')"
           @click="selectAll"
@@ -50,7 +55,7 @@
 </template>
 
 <script setup>
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, reactive, ref, shallowRef, watch } from 'vue'
 import { useI18n } from '../../composables/use-i18n-polyfill'
 
 import FtCard from '../ft-card/ft-card.vue'
@@ -111,10 +116,15 @@ const intlCollator = computed(() => {
   return new Intl.Collator([locale.value, 'en'], { sensitivity: 'base' })
 })
 
+/** @type {import('vue').ComputedRef<boolean>} */
+const showUnsubscribeButton = computed(() => {
+  return !store.getters.getHideUnsubscribeButton
+})
+
 const filteredProfileIndex = ref(0)
 
-/** @type {import('vue').Ref<Profile['subscriptions']>} */
-const channels = ref([])
+/** @type {import('vue').ShallowRef<Profile['subscriptions']>} */
+const channels = shallowRef([])
 
 function loadChannels() {
   const profileId = profileIdList.value[filteredProfileIndex.value]
@@ -155,35 +165,31 @@ watch(() => props.profile, () => {
 
 watch(filteredProfileIndex, loadChannels)
 
-/**
- * TODO: Replace with a Set with Vue 3
- *
- * @type {import('vue').Ref<string[]>}
- */
-const selected = ref([])
+/** @type {import('vue').Reactive<Set<string>>} */
+const selected = reactive(new Set())
 
 const selectedText = computed(() => {
-  return t('Profile.{number} selected', { number: selected.value.length })
+  return t('Profile.{number} selected', { number: selected.size })
 })
 
 function selectAll() {
-  selected.value = channels.value.map(channel => channel.id)
+  channels.value.forEach(channel => {
+    return selected.add(channel.id)
+  })
 }
 
 function selectNone() {
-  selected.value = []
+  selected.clear()
 }
 
 /**
  * @param {string} channelId
  */
 function handleChannelToggle(channelId) {
-  const index = selected.value.indexOf(channelId)
-
-  if (index === -1) {
-    selected.value.push(channelId)
+  if (selected.has(channelId)) {
+    selected.delete(channelId)
   } else {
-    selected.value.splice(index, 1)
+    selected.add(channelId)
   }
 }
 
@@ -213,16 +219,14 @@ function handleProfileFilterChange(profileId) {
 }
 
 function addChannelsToProfile() {
-  if (selected.value.length === 0) {
+  if (selected.size === 0) {
     showToast(t('Profile.No channel(s) have been selected'))
   } else {
-    const selected_ = selected.value
-
     const profileId = profileIdList.value[filteredProfileIndex.value]
     const subscriptions = profileList.value
       .find((profile) => profile._id === profileId)
       .subscriptions
-      .filter((channel) => selected_.includes(channel.id))
+      .filter((channel) => selected.has(channel.id))
 
     const profile = deepCopy(props.profile)
     profile.subscriptions.push(...deepCopy(subscriptions))

@@ -27,6 +27,7 @@ import {
   throttle,
   debounce,
   removeFromArrayIfExists,
+  copyToClipboard,
 } from '../../helpers/utils'
 import { MANIFEST_TYPE_SABR } from '../../helpers/player/SabrManifestParser'
 import { setupSabrScheme } from '../../helpers/player/SabrSchemePlugin'
@@ -101,6 +102,10 @@ export default defineComponent({
     currentChapterIndex: {
       type: Number,
       default: 0
+    },
+    chaptersSrc: {
+      type: String,
+      default: ''
     },
     storyboardSrc: {
       type: String,
@@ -259,7 +264,7 @@ export default defineComponent({
 
     watch(displayVideoPlayButton, (newValue) => {
       ui.configure({
-        addBigPlayButton: newValue
+        bigButtons: newValue ? ['play_pause'] : []
       })
     })
 
@@ -277,7 +282,10 @@ export default defineComponent({
     /** @type {import('vue').ComputedRef<number | 'auto'>} */
     const defaultQuality = computed(() => {
       const value = store.getters.getDefaultQuality
-      if (value === 'auto') { return value }
+
+      // TODO: Revert when auto is fixed (720 is the default setttings value)
+      if (value === 'auto') { return 720 }
+      // if (value === 'auto') { return value }
 
       return parseInt(value)
     })
@@ -338,6 +346,11 @@ export default defineComponent({
     })
 
     /** @type {import('vue').ComputedRef<string>} */
+    const screenshotMode = computed(() => {
+      return store.getters.getScreenshotMode
+    })
+
+    /** @type {import('vue').ComputedRef<string>} */
     const screenshotFormat = computed(() => {
       return store.getters.getScreenshotFormat
     })
@@ -345,11 +358,6 @@ export default defineComponent({
     /** @type {import('vue').ComputedRef<number>} */
     const screenshotQuality = computed(() => {
       return store.getters.getScreenshotQuality
-    })
-
-    /** @type {import('vue').ComputedRef<boolean>} */
-    const screenshotAskPath = computed(() => {
-      return store.getters.getScreenshotAskPath
     })
 
     /** @type {import('vue').ComputedRef<boolean>} */
@@ -616,7 +624,6 @@ export default defineComponent({
           // This only affects the "auto" quality, users can still manually select whatever quality they want.
           restrictToElementSize: true
         },
-        autoShowText: shaka.config.AutoShowText.NEVER,
 
         // Prioritise variants that are predicted to play:
         // - `smooth`: without dropping frames
@@ -784,22 +791,18 @@ export default defineComponent({
 
     const uiConfig = computed(() => {
       const controlPanelElements = [
+        'ft_skip_previous',
         'play_pause',
+        'ft_skip_next',
         'mute',
         'volume',
         'time_and_duration',
         'spacer'
       ]
-      const controlPanelElementsWithSkipButtons = [
-        ...controlPanelElements.slice(0, 1),
-        'ft_skip_previous',
-        'ft_skip_next',
-        ...controlPanelElements.slice(1)
-      ]
 
       /** @type {shaka.extern.UIConfiguration} */
       const uiConfig = {
-        controlPanelElements: props.watchingPlaylist ? controlPanelElementsWithSkipButtons : controlPanelElements,
+        controlPanelElements: controlPanelElements,
         overflowMenuButtons: [],
 
         // only set this to label when we actually have labels, so that the warning doesn't show up
@@ -812,7 +815,7 @@ export default defineComponent({
       }
 
       /** @type {string[]} */
-      let elementList = []
+      let elementList
 
       if (onlyUseOverFlowMenu.value) {
         uiConfig.overflowMenuButtons = [
@@ -821,6 +824,7 @@ export default defineComponent({
           'playback_rate',
           'captions',
           'ft_audio_tracks',
+          'chapter',
           'loop',
           'ft_screenshot',
           'picture_in_picture',
@@ -848,6 +852,7 @@ export default defineComponent({
           'captions',
           'playback_rate',
           props.format === 'legacy' ? 'ft_legacy_quality' : 'quality',
+          'chapter',
           'loop',
           'recenter_vr',
           'toggle_stereoscopic',
@@ -881,6 +886,15 @@ export default defineComponent({
         removeFromArrayIfExists(uiConfig.overflowMenuButtons, 'toggle_stereoscopic')
       }
 
+      if (!props.watchingPlaylist) {
+        removeFromArrayIfExists(uiConfig.controlPanelElements, 'ft_skip_previous')
+        removeFromArrayIfExists(uiConfig.controlPanelElements, 'ft_skip_next')
+      }
+
+      if (props.chapters.length === 0) {
+        removeFromArrayIfExists(uiConfig.overflowMenuButtons, 'chapter')
+      }
+
       return uiConfig
     })
 
@@ -901,6 +915,10 @@ export default defineComponent({
           contextMenuElements: ['ft_stats'],
           enableTooltips: true,
           seekBarColors: {
+            // shaka-player's chapter markers only show up part of the time for the DASH and audio formats
+            // the issue is clearly on the FreeTube side as shaka-player's demo page works fine and they show up all the time for the legacy formats.
+            // As I have spent way too much time debugging it and still cannot make sense of it, we'll stick with FreeTube's own chapter markers for now.
+            chapters: 'transparent',
             played: 'var(--primary-color)'
           },
           showAudioCodec: false,
@@ -908,9 +926,21 @@ export default defineComponent({
           volumeBarColors: {
             level: 'var(--primary-color)'
           },
+          mediaSession: {
+            // The WatchVideoInfo component handles that
+            handleMetadata: false,
+            // Need to override the default list so it doesn't override the next and previous video handlers in the WatchVideoPlaylist component.
+            supportedActions: [
+              'pause',
+              'play',
+              'seekbackward',
+              'seekforward',
+              'seekto'
+            ]
+          },
 
           // these have their own watchers
-          addBigPlayButton: displayVideoPlayButton.value,
+          bigButtons: displayVideoPlayButton.value ? ['play_pause'] : [],
           enableFullscreenOnRotation: enterFullscreenOnDisplayRotate.value,
           playbackRates: playbackRates.value,
           tapSeekDistance: defaultSkipInterval.value,
@@ -920,7 +950,13 @@ export default defineComponent({
 
           // TODO: enable this when electron gets document PiP support
           // https://github.com/electron/electron/issues/39633
-          preferDocumentPictureInPicture: false
+          documentPictureInPicture: {
+            enabled: false
+          }
+        }
+
+        if (document.pictureInPictureEnabled) {
+          firstTimeConfig.mediaSession.supportedActions.push('enterpictureinpicture')
         }
 
         // Combine the config objects so we only need to do one configure call
@@ -992,9 +1028,6 @@ export default defineComponent({
           controlsContainer.addEventListener('click', handleControlsContainerClick, true)
         }
       }
-
-      // make scrolling over volume slider change the volume
-      container.value.querySelector('.shaka-volume-bar').addEventListener('wheel', mouseScrollVolumeHandler)
 
       // title overlay when the video is fullscreened
       // placing this inside the controls container so that we can fade it in and out at the same time as the controls
@@ -1686,29 +1719,14 @@ export default defineComponent({
       canvas.height = height
       canvas.getContext('2d').drawImage(video_, 0, 0)
 
-      const format = screenshotFormat.value
+      // Navigator Clipboard API only supports PNG
+      const format = screenshotMode.value === 'clipboard' ? 'png' : screenshotFormat.value
       const mimeType = `image/${format === 'jpg' ? 'jpeg' : format}`
       // imageQuality is ignored for pngs, so it is still okay to pass the quality value
       const imageQuality = screenshotQuality.value / 100
 
-      let filename
-      try {
-        filename = await store.dispatch('parseScreenshotCustomFileName', {
-          date: new Date(),
-          playerTime: video_.currentTime,
-          videoId: props.videoId
-        })
-      } catch (err) {
-        console.error(`Parse failed: ${err.message}`)
-        showToast(t('Screenshot Error', { error: err.message }))
-        canvas.remove()
-        return
-      }
-
-      const filenameWithExtension = `${filename}.${format}`
-
       const wasPlaying = !video_.paused
-      if ((!process.env.IS_ELECTRON || screenshotAskPath.value) && wasPlaying) {
+      if ((!process.env.IS_ELECTRON || screenshotMode.value === 'prompt_folder') && wasPlaying) {
         video_.pause()
       }
 
@@ -1716,25 +1734,45 @@ export default defineComponent({
         /** @type {Blob} */
         const blob = await new Promise((resolve) => canvas.toBlob(resolve, mimeType, imageQuality))
 
-        if (!process.env.IS_ELECTRON || screenshotAskPath.value) {
-          const saved = await writeFileWithPicker(
-            filenameWithExtension,
-            blob,
-            format.toUpperCase(),
-            mimeType,
-            `.${format}`,
-            'player-screenshots',
-            'pictures'
-          )
-
-          if (saved) {
-            showToast(t('Screenshot Success'))
+        if (screenshotMode.value === 'clipboard') {
+          await copyToClipboard(blob, { messageOnSuccess: t('Screenshot Clipboard Success'), messageOnError: t('Screenshot Clipboard Error') })
+        } else if (screenshotMode.value === 'prompt_folder' || screenshotMode.value === 'default_folder') {
+          let filename
+          try {
+            filename = await store.dispatch('parseScreenshotCustomFileName', {
+              date: new Date(),
+              playerTime: video_.currentTime,
+              videoId: props.videoId
+            })
+          } catch (err) {
+            console.error(`Parse failed: ${err.message}`)
+            showToast(t('Screenshot Error', { error: err.message }))
+            canvas.remove()
+            return
           }
-        } else {
-          const arrayBuffer = await blob.arrayBuffer()
 
-          if (await window.ftElectron.writeToDefaultFolder(filenameWithExtension, arrayBuffer)) {
-            showToast(t('Screenshot Success'))
+          const filenameWithExtension = `${filename}.${format}`
+
+          if (!process.env.IS_ELECTRON || screenshotMode.value === 'prompt_folder') {
+            const saved = await writeFileWithPicker(
+              filenameWithExtension,
+              blob,
+              format.toUpperCase(),
+              mimeType,
+              `.${format}`,
+              'player-screenshots',
+              'pictures'
+            )
+
+            if (saved) {
+              showToast(t('Screenshot Success'))
+            }
+          } else {
+            const arrayBuffer = await blob.arrayBuffer()
+
+            if (await window.ftElectron.writeToDefaultFolder(filenameWithExtension, arrayBuffer)) {
+              showToast(t('Screenshot Success'))
+            }
           }
         }
       } catch (error) {
@@ -1743,7 +1781,7 @@ export default defineComponent({
       } finally {
         canvas.remove()
 
-        if ((!process.env.IS_ELECTRON || screenshotAskPath.value) && wasPlaying) {
+        if ((!process.env.IS_ELECTRON || screenshotMode.value === 'prompt_folder') && wasPlaying) {
           video_.play()
         }
       }
@@ -2321,16 +2359,23 @@ export default defineComponent({
             showValueChange(message, messageIcon)
           }
           break
-        case KeyboardShortcuts.VIDEO_PLAYER.GENERAL.CAPTIONS:
+        case KeyboardShortcuts.VIDEO_PLAYER.GENERAL.CAPTIONS: {
           // Toggle caption/subtitles
-          if (player.getTextTracks().length > 0) {
+
+          const textTracks = player.getTextTracks()
+          if (textTracks.length > 0) {
             event.preventDefault()
 
-            const currentlyVisible = player.isTextTrackVisible()
-            player.setTextTrackVisibility(!currentlyVisible)
+            if (textTracks.some(track => track.active)) {
+              player.selectTextTrack(null)
+            } else {
+              player.selectTextTrack(textTracks[0])
+            }
+
             showOverlayControls()
           }
           break
+        }
         case KeyboardShortcuts.VIDEO_PLAYER.GENERAL.VOLUME_UP:
           // Increase volume
           event.preventDefault()
@@ -2855,7 +2900,7 @@ export default defineComponent({
         sabrManifest = player.getManifest()
       }
 
-      // For SABR we include the thumbnails and subtitles in the manifest
+      // For SABR we include the thumbnails, chapters and subtitles in the manifest
       if (!process.env.SUPPORTS_LOCAL_API || props.format === 'legacy' || props.manifestMimeType !== MANIFEST_TYPE_SABR) {
         const promises = []
 
@@ -2928,6 +2973,15 @@ export default defineComponent({
           )
         }
 
+        if (!isLive.value && props.chaptersSrc.length > 0) {
+          promises.push(
+            // Only log the error, as the chapters are a nice to have (we have our own UI outside of the player too)
+            // If an error occurs with them, it is not critical
+            player.addChaptersTrack(props.chaptersSrc, 'und', 'text/vtt')
+              .catch(error => logShakaError(error, 'addChaptersTrack', props.videoId, props.chaptersSrc))
+          )
+        }
+
         await Promise.all(promises)
       }
 
@@ -2939,8 +2993,6 @@ export default defineComponent({
 
         if (textTrack) {
           player.selectTextTrack(textTrack)
-
-          await player.setTextTrackVisibility(true)
         }
       }
 
@@ -2998,12 +3050,12 @@ export default defineComponent({
 
         const activeCaptionIndex = player.getTextTracks().findIndex(caption => caption.active)
 
-        if (activeCaptionIndex >= 0 && player.isTextTrackVisible()) {
+        if (activeCaptionIndex >= 0) {
           restoreCaptionIndex = activeCaptionIndex
 
           // hide captions before switching as shaka/the browser doesn't clean up the displayed captions
           // when switching away from the legacy formats
-          await player.setTextTrackVisibility(false)
+          player.selectTextTrack(null)
         } else {
           restoreCaptionIndex = null
         }
@@ -3053,7 +3105,14 @@ export default defineComponent({
 
             if (useAutoQuality) {
               if (label) {
-                player.selectVariantsByLabel(label)
+                const audioTracks = deduplicateAudioTracks(player.getAudioTracks()).values()
+
+                for (const track of audioTracks) {
+                  if (label === track.label) {
+                    player.selectAudioTrack(track)
+                    break
+                  }
+                }
               }
             } else {
               if (dimension) {
@@ -3063,6 +3122,13 @@ export default defineComponent({
 
                 if (label) {
                   variants = variants.filter(variant => variant.label === label)
+                } else if (variants.length > 1) {
+                  // default audio track
+                  const filteredVariants = variants.filter(variant => variant.audioRoles.includes('main'))
+                  // Sometimes there is nothing marked as main, don't filter in this case
+                  if (filteredVariants.length > 0) {
+                    variants = filteredVariants
+                  }
                 }
 
                 let chosenVariant

@@ -61,9 +61,9 @@
         </div>
         <p
           v-if="listType !== 'grid'"
+          v-safer-html="description"
           class="description"
           dir="auto"
-          v-html="description"
         />
       </div>
       <FtSubscribeButton
@@ -81,6 +81,7 @@
 import { computed } from 'vue'
 
 import FtSubscribeButton from '../FtSubscribeButton/FtSubscribeButton.vue'
+import { vSaferHtml } from '../../directives/vSaferHtml'
 
 import store from '../../store/index'
 

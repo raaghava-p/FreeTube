@@ -42,22 +42,19 @@ Global:
   Sort By: Urut Menurut
 Version {versionNumber} is now available!  Click for more details: 'Versi {versionNumber} sekarang tersedia!  Klik untuk detail lebih lanjut'
 Download From Site: 'Unduh dari Situs'
-A new blog is now available, {blogTitle}. Click to view more: 'Pos blog baru tersedia, {blogTitle}. Klik untuk lihat lebih lanjut'
 
 # Search Bar
 Search / Go to URL: 'Cari / Pergi ke URL'
   # In Filter Button
 Search Filters:
   Search Filters: 'Filter Pencarian'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Paling Relevan'
-    Rating: 'Peringkat'
-    Upload Date: 'Tanggal Diunggah'
-    View Count: 'Jumlah Tontonan'
+    Prioritize: Prioritaskan
+    Popularity: Popularitas
   Time:
     Time: 'Durasi'
     Any Time: 'Kapan Saja'
-    Last Hour: 'Sejam Terakhir'
     Today: 'Hari ini'
     This Week: 'Minggu ini'
     This Month: 'Bulan ini'
@@ -72,10 +69,9 @@ Search Filters:
   Duration:
     Duration: 'Durasi'
     All Durations: 'Semua Durasi'
-    Short (< 4 minutes): 'Pendek (< 4 menit)'
-    Long (> 20 minutes): 'Panjang (> 20 menit)'
-  # On Search Page
-    Medium (4 - 20 minutes): Sedang (4 - 20 menit)
+    '< 3 minutes': '< 3 menit'
+    '> 20 minutes': '> 20 menit'
+    '3 - 20 minutes': 3 - 20 menit
   Search Results: 'Hasil Pencarian'
   Fetching results. Please wait: 'Mengambil hasil. Silakan tunggu'
   Fetch more results: 'Ambil lebih banyak hasil'
@@ -213,7 +209,6 @@ Settings:
   General Settings:
     General Settings: 'Umum'
     Check for Updates: 'Cek Pembaruan'
-    Check for Latest Blog Posts: 'Cek Kiriman Blog Terbaru'
     Fallback to Non-Preferred Backend on Failure: 'Beralih ke Layanan Cadangan saat terjadi Kegagalan'
     Enable Search Suggestions: 'Aktifkan Saran Pencarian'
     Default Landing Page: 'Halaman Awal Baku'
@@ -416,10 +411,14 @@ Settings:
       Folder Button: Pilih Folder
       Format Label: Format Tangkapan Layar
       Enable: Aktifkan Tangkapan Layar
-      Ask Path: Tanya Lokasi Penyimpanan
+      Modes:
+        Ask Path: Tanya Lokasi Penyimpanan
+        Save To Folder: Simpan ke Folder
+        Clipboard: Salin ke Papan klip
       Quality Label: Kualitas Tangkapan Layar
       File Name Label: Pola Nama Berkas
       File Name Tooltip: Anda dapat menggunakan variabel di bawah ini. %Y Tahun 4 digit. %M Bulan 2 digit. %D Hari 2 digit. %H Jam 2 digit. %N Menit 2 digit. %S Detik 2 digit. %T Milidetik 3 digit. %s Detik Video. %t Milidetik Video 3 digit. %i ID Video.
+      Mode: Mode Tangkapan Layar
     Enter Fullscreen on Display Rotate: Masuk ke Layar Penuh ketika Perangkat Diputar
     Skip by Scrolling Over Video Player: Lewati dengan Menggulir Di Atas Pemutar Video
     Default Viewing Mode:
@@ -621,15 +620,12 @@ About:
   #& About
   Donate: Donasi
   these people and projects: pengembang dan proyek berikut
-  FreeTube is made possible by: FreeTube dikembangkan oleh
   Credits: Kredit
   Translate: Terjemahkan
   room rules: aturan kamar
-  Please read the: Silakan baca
   Chat on Matrix: Mengobrol di Matrix
   Mastodon: mastodon
   Email: Surel
-  Blog: Blog
   Website: Situs web
   Please check for duplicates before posting: Silakan periksa duplikat sebelum melaporkan
   GitHub issues: Isu GitHub
@@ -642,8 +638,10 @@ About:
   Source code: Kode sumber
   Beta: Beta
   Discussions: Diskusi
-  Licensed under the: Dilisensikan dengan lisensi
   AGPLv3: Agplv3
+  Licensed under the {licenseLink}: Dilisensikan di bawah {licenseLink}
+  Please read the {roomRulesLink}: Silahkan baca {roomRulesLink}
+  FreeTube is made possible by {creditsPageLink}: FreeTube dapat dibuat atas dukungan dari {creditsPageLink}
 Profile:
   Profile Select: 'Pilih Profil'
   All Channels: 'Semua Kanal'
@@ -1119,3 +1117,5 @@ Description:
   Expand Description: '...lanjutan'
 Compact side navigation: Navigasi samping ringkas
 Expand side navigation: Perluas navigasi samping
+Screenshot Clipboard Success: Tangkapan layar telah disimpan ke papan klip
+Screenshot Clipboard Error: Gagal menyalin tangkapan layar ke papan klip

@@ -283,7 +283,6 @@ import FtSelect from '../../components/FtSelect/FtSelect.vue'
 
 import store from '../../store/index'
 
-import packageDetails from '../../../../package.json'
 import {
   copyToClipboard,
   extractNumberFromString,
@@ -681,7 +680,7 @@ async function getChannelLocal() {
       channelName.value = channelName
       thumbnailUrl.value = channelThumbnailUrl
 
-      store.commit('setAppTitle', `${channelName_} - ${packageDetails.productName}`)
+      store.commit('setAppTitle', channelName_)
 
       store.dispatch('updateSubscriptionDetails', { channelThumbnailUrl, channelName: channelName_, channelId: id.value })
 
@@ -729,7 +728,7 @@ async function getChannelLocal() {
     }
     tags.value = tags_
 
-    store.commit('setAppTitle', `${channelName_} - ${packageDetails.productName}`)
+    store.commit('setAppTitle', channelName_)
 
     if (subscriberText) {
       const subCount_ = parseLocalSubscriberCount(subscriberText)
@@ -944,7 +943,7 @@ async function getChannelInfoInvidious() {
     const channelName_ = response.author
     const channelId = response.authorId
     channelName.value = channelName_
-    store.commit('setAppTitle', `${channelName_} - ${packageDetails.productName}`)
+    store.commit('setAppTitle', channelName_)
     id.value = channelId
     isFamilyFriendly.value = response.isFamilyFriendly
     subCount.value = response.subCount
@@ -1112,7 +1111,9 @@ async function getChannelVideosLocal() {
         return
       }
 
-      latestVideos.value = parseLocalChannelVideos(videosTab.videos, id.value, channelName.value)
+      // TODO: restore usage of official API instead of memo after youtubei.js 17.1.0 released
+      // latestVideos.value = parseLocalChannelVideos(videosTab.videos, id.value, channelName.value)
+      latestVideos.value = parseLocalChannelVideos([...videosTab.memo.getType(YTNodes.LockupView)], id.value, channelName.value)
       videoContinuationData.value = videosTab.has_continuation ? videosTab : null
       isElementListLoading.value = false
     }
@@ -1157,7 +1158,9 @@ async function getChannelVideosLocalMore() {
        */
       const continuation = await videoContinuationData.value.getContinuation()
 
-      latestVideos.value = latestVideos.value.concat(parseLocalChannelVideos(continuation.videos, id.value, channelName.value))
+      // TODO: restore usage of official API instead of memo after youtubei.js 17.1.0 released
+      // latestVideos.value = latestVideos.value.concat(parseLocalChannelVideos(continuation.videos, id.value, channelName.value))
+      latestVideos.value = latestVideos.value.concat(parseLocalChannelVideos([...continuation.memo.getType(YTNodes.LockupView)], id.value, channelName.value))
       videoContinuationData.value = continuation.has_continuation ? continuation : null
     }
   } catch (err) {
@@ -1396,10 +1399,14 @@ async function getChannelLiveLocal() {
     // work around YouTube bug where it will return a bunch of responses with only continuations in them
     // e.g. https://www.youtube.com/@TWLIVES/streams
 
-    let videos = liveTab.videos
+    // TODO: restore usage of official API instead of memo after youtubei.js 17.1.0 released
+    // let videos = liveTab.videos
+    let videos = [...liveTab.memo.getType(YTNodes.LockupView)]
     while (videos.length === 0 && liveTab.has_continuation) {
       liveTab = await liveTab.getContinuation()
-      videos = liveTab.videos
+      // TODO: restore usage of official API instead of memo after youtubei.js 17.1.0 released
+      // videos = liveTab.videos
+      videos = [...liveTab.memo.getType(YTNodes.LockupView)]
     }
 
     latestLive.value = parseLocalChannelVideos(videos, id.value, channelName.value)
@@ -1434,7 +1441,9 @@ async function getChannelLiveLocalMore() {
      */
     const continuation = await liveContinuationData.value.getContinuation()
 
-    latestLive.value = latestLive.value.concat(parseLocalChannelVideos(continuation.videos, id.value, channelName.value))
+    // TODO: restore usage of official API instead of memo after youtubei.js 17.1.0 released
+    // latestLive.value = latestLive.value.concat(parseLocalChannelVideos(continuation.videos, id.value, channelName.value))
+    latestLive.value = latestLive.value.concat(parseLocalChannelVideos([...continuation.memo.getType(YTNodes.LockupView)], id.value, channelName.value))
     liveContinuationData.value = continuation.has_continuation ? continuation : null
   } catch (err) {
     console.error(err)

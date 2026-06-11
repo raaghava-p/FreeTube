@@ -42,22 +42,17 @@ Global:
   Sort By: Сортирање по
 Version {versionNumber} is now available!  Click for more details: 'Верзија {versionNumber} је сада достуна!  Кликните за више детаља'
 Download From Site: 'Преузми са сајта'
-A new blog is now available, {blogTitle}. Click to view more: 'Нови блог је сада доступан, {blogTitle}. Кликните да бисте видели више'
 
 # Search Bar
 Search / Go to URL: 'Претрага / Иди на URL'
   # In Filter Button
 Search Filters:
   Search Filters: 'Филтери претраге'
-  Sort By:
+  Prioritize:
     Most Relevant: 'Најрелевантније'
-    Rating: 'Оцена'
-    Upload Date: 'Датум отпремања'
-    View Count: 'Број прегледа'
   Time:
     Time: 'Време'
     Any Time: 'Било које време'
-    Last Hour: 'Последњи сат'
     Today: 'Данас'
     This Week: 'Ове недеље'
     This Month: 'Овог месеца'
@@ -72,10 +67,9 @@ Search Filters:
   Duration:
     Duration: 'Трајање'
     All Durations: 'Сва трајања'
-    Short (< 4 minutes): 'Кратко (< 4 минута)'
-    Long (> 20 minutes): 'Дуго (> 20 минута)'
-  # On Search Page
-    Medium (4 - 20 minutes): Средње (4 - 20 минута)
+    '< 3 minutes': '< 3 минута'
+    '> 20 minutes': '> 20 минута'
+    '3 - 20 minutes': 3 - 20 минута
   Search Results: 'Резултати претраге'
   Fetching results. Please wait: 'Прикупљање резултата. Сачекајте'
   Fetch more results: 'Прикупити више резултата'
@@ -213,7 +207,6 @@ Settings:
   General Settings:
     General Settings: 'Опште'
     Check for Updates: 'Провера ажурирања'
-    Check for Latest Blog Posts: 'Провера најновијих објава на блогу'
     Fallback to Non-Preferred Backend on Failure: 'Повратак на непреферирани бек-енд у случају неуспеха'
     Enable Search Suggestions: 'Омогући предлоге за претрагу'
     Default Landing Page: 'Подразумевана почетна страница'
@@ -406,7 +399,8 @@ Settings:
       Folder Button: Избор фолдера
       Format Label: Формат снимка екрана
       Enable: Омогући снимак екрана
-      Ask Path: Питај за фолдер за чување
+      Modes:
+        Ask Path: Питај за фолдер за чување
       Quality Label: Квалитет снимка екрана
       File Name Tooltip: Можете да користите променљиве испод. %Y Година 4 цифре. %M Месец 2 цифре. %D Дан 2 цифре. %H Сат 2 цифре. %N Минут 2 цифре. %S Секунда 2 цифре. %T Милисекунда 3 цифре. %s Секунда видео снимка. %t Милисекунда видео снимка 3 цифре. %i ID видео снимка.
       File Name Label: Образац назива фајла
@@ -616,20 +610,16 @@ About:
   GitHub issues: 'Пријава проблема на GitHub-у'
   Please check for duplicates before posting: 'Проверите да ли има дупликата пре објављивања'
   Website: 'Веб-сајт'
-  Blog: 'Блог'
   Email: 'Имејл'
   Mastodon: 'Mastodon'
   Chat on Matrix: 'Ћаскање на Matrix-у'
-  Please read the: 'Прочитајте'
   room rules: 'правила собе'
   Translate: 'Преведи'
   Credits: 'Заслуге'
-  FreeTube is made possible by: 'FreeTube су омогућили'
   these people and projects: 'ови људи и пројекти'
   Donate: 'Донација'
 
   Discussions: Дискусије
-  Licensed under the: Лиценцирано под
   AGPLv3: AGPLv3
 Profile:
   Profile Select: 'Избор профила'

@@ -193,7 +193,7 @@ async function loadPostsForSubscriptionsFromRemote() {
   const subscriptionUpdates = []
 
   const postListFromRemote = (await concurrentRequestLimitedMap(channelsToLoadFromRemote, async (channel) => {
-    let posts = []
+    let posts
     if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
       posts = await getChannelPostsInvidious(channel)
     } else {

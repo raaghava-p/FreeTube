@@ -41,23 +41,20 @@ Global:
     Like Count: 1 like | {count} likes
     Comment Count: 1 comment | {count} comments
 Version {versionNumber} is now available!  Click for more details: 'Version {versionNumber} is now available!  Click for more details'
-Download From Site: 'Download from site'
-A new blog is now available, {blogTitle}. Click to view more: 'A new blog is now available, {blogTitle}. Click to view more'
+Download From Site: 'Download From Site'
 
 # Search Bar
 Search / Go to URL: 'Search / Go to URL'
   # In Filter Button
 Search Filters:
   Search Filters: 'Search filters'
-  Sort By:
+  Prioritize:
+    Prioritize: Prioritize
     Most Relevant: 'Most relevant'
-    Rating: 'Rating'
-    Upload Date: 'Upload date'
-    View Count: 'View count'
+    Popularity: 'Popularity'
   Time:
     Time: 'Time'
     Any Time: 'Any time'
-    Last Hour: 'Last hour'
     Today: 'Today'
     This Week: 'This week'
     This Month: 'This month'
@@ -72,10 +69,9 @@ Search Filters:
   Duration:
     Duration: 'Duration'
     All Durations: 'All durations'
-    Short (< 4 minutes): 'Short (< 4 minutes)'
-    Long (> 20 minutes): 'Long (> 20 minutes)'
-  # On Search Page
-    Medium (4 - 20 minutes): Medium (4 - 20 minutes)
+    '< 3 minutes': '< 3 minutes'
+    '> 20 minutes': '> 20 minutes'
+    '3 - 20 minutes': 3 - 20 minutes
   Search Results: 'Search results'
   Fetching results. Please wait: 'Fetching results. Please wait'
   Fetch more results: 'Fetch more results'
@@ -214,7 +210,6 @@ Settings:
   General Settings:
     General Settings: 'General'
     Check for Updates: 'Check for updates'
-    Check for Latest Blog Posts: 'Check for latest blog posts'
     Fallback to Non-Preferred Backend on Failure: 'Revert to non-preferred backend on failure'
     Enable Search Suggestions: 'Enable search suggestions'
     Default Landing Page: 'Default landing page'
@@ -420,8 +415,12 @@ Settings:
       Quality Label: Screenshot quality
       Folder Label: Screenshot folder
       Format Label: Screenshot format
-      Ask Path: Ask for Save Folder
+      Modes:
+        Ask Path: Ask for Save Folder
+        Save To Folder: Save to Folder
+        Clipboard: Copy to Clipboard
       File Name Label: Filename pattern
+      Mode: Screenshot Mode
     Skip by Scrolling Over Video Player: Skip by scrolling over video player
     Autoplay Interruption Timer: Autoplay Interruption Timer
     Default Viewing Mode:
@@ -625,14 +624,11 @@ About:
   Email: E-mail
   FAQ: FAQ
   Credits: Credits
-  Blog: Blog
   Website: Website
 
   these people and projects: these people and projects
-  FreeTube is made possible by: FreeTube is made possible by
   Translate: Translate
   room rules: room rules
-  Please read the: Please read the
   Chat on Matrix: Chat on Matrix
   Mastodon: Mastodon
   Please check for duplicates before posting: Please check for duplicates before posting
@@ -643,8 +639,10 @@ About:
   Downloads / Changelog: Downloads / Changelog
   Source code: Source code
   Discussions: Discussions
-  Licensed under the: Licensed under the
   AGPLv3: AGPLv3
+  Licensed under the {licenseLink}: Licensed under the {licenseLink}
+  Please read the {roomRulesLink}: Please read the {roomRulesLink}
+  FreeTube is made possible by {creditsPageLink}: FreeTube is made possible by {creditsPageLink}
 Profile:
   Profile Settings: Profile
   Profile Select: 'Profile Select'
@@ -1020,7 +1018,7 @@ Clipboard:
   Copy failed: Copy to clipboard failed
   Cannot access clipboard without a secure connection: Cannot access clipboard without a secure connection
 Preferences: Preferences
-Ok: OK
+Ok: Ok
 Hashtag:
   Hashtag: Hashtag
   This hashtag does not currently have any videos: This hashtag does not currently have any videos
@@ -1119,3 +1117,5 @@ KeyboardShortcutPrompt:
 shortcutLabelSeparator: ｜
 Compact side navigation: Compact side navigation
 Expand side navigation: Expand side navigation
+Screenshot Clipboard Success: Saved screenshot to clipboard
+Screenshot Clipboard Error: Screenshot copy to clipboard failed
