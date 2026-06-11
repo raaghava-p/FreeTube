@@ -2,7 +2,39 @@ import { generateRandomUniqueId } from '../../helpers/playlists'
 import { showToast } from '../../helpers/utils'
 import i18n from '../../i18n/index'
 
-const state = {
+const PERSIST_KEY = 'freetube-queue'
+
+function loadPersistedQueue() {
+  try {
+    const persisted = JSON.parse(localStorage.getItem(PERSIST_KEY))
+
+    if (persisted && Array.isArray(persisted.queueItems)) {
+      return {
+        queueItems: persisted.queueItems,
+        currentQueueIndex: typeof persisted.currentQueueIndex === 'number' ? persisted.currentQueueIndex : -1,
+        autoplayQueue: persisted.autoplayQueue !== false
+      }
+    }
+  } catch (err) {
+    console.error('Failed to restore queue:', err)
+  }
+
+  return null
+}
+
+function persistQueue(state) {
+  try {
+    localStorage.setItem(PERSIST_KEY, JSON.stringify({
+      queueItems: state.queueItems,
+      currentQueueIndex: state.currentQueueIndex,
+      autoplayQueue: state.autoplayQueue
+    }))
+  } catch (err) {
+    console.error('Failed to persist queue:', err)
+  }
+}
+
+const state = loadPersistedQueue() ?? {
   queueItems: [],
   currentQueueIndex: -1,
   autoplayQueue: true
@@ -154,15 +186,18 @@ const actions = {
 const mutations = {
   addToQueue(state, videoData) {
     state.queueItems.push(videoData)
+    persistQueue(state)
   },
 
   addVideosToQueue(state, videos) {
     state.queueItems.push(...videos)
+    persistQueue(state)
   },
 
   playVideoAtFrontOfQueue(state, videoData) {
     state.queueItems.unshift(videoData)
     state.currentQueueIndex = 0
+    persistQueue(state)
   },
 
   removeFromQueue(state, { queueItemId }) {
@@ -182,16 +217,20 @@ const mutations = {
         state.currentQueueIndex = state.queueItems.length - 1
       }
     }
+
+    persistQueue(state)
   },
 
   clearQueue(state) {
     state.queueItems = []
     state.currentQueueIndex = -1
+    persistQueue(state)
   },
 
   setCurrentQueueIndex(state, index) {
     if (index === -1 || (index >= 0 && index < state.queueItems.length)) {
       state.currentQueueIndex = index
+      persistQueue(state)
     }
   },
 
@@ -213,10 +252,13 @@ const mutations = {
     } else if (fromIndex > state.currentQueueIndex && toIndex <= state.currentQueueIndex) {
       state.currentQueueIndex++
     }
+
+    persistQueue(state)
   },
 
   setAutoplayQueue(state, value) {
     state.autoplayQueue = value
+    persistQueue(state)
   }
 }
 

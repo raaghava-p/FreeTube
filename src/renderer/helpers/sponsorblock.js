@@ -1,5 +1,42 @@
 import store from '../store/index'
 
+// Circuit breaker: when the SponsorBlock/DeArrow server keeps failing,
+// stop hammering it for a while instead of delaying every video card and
+// watch page with doomed requests.
+const FAILURE_THRESHOLD = 3
+const COOLDOWN_MS = 5 * 60 * 1000
+
+const circuits = new Map()
+
+function circuitOpen(key) {
+  const circuit = circuits.get(key)
+  if (!circuit || circuit.failures < FAILURE_THRESHOLD) {
+    return false
+  }
+
+  if (Date.now() - circuit.lastFailure > COOLDOWN_MS) {
+    circuits.delete(key)
+    return false
+  }
+
+  return true
+}
+
+function recordFailure(key) {
+  const circuit = circuits.get(key) ?? { failures: 0, lastFailure: 0 }
+  circuit.failures++
+  circuit.lastFailure = Date.now()
+  circuits.set(key, circuit)
+
+  if (circuit.failures === FAILURE_THRESHOLD) {
+    console.error(`${key} failed ${FAILURE_THRESHOLD} times, pausing requests for ${COOLDOWN_MS / 60000} minutes`)
+  }
+}
+
+function recordSuccess(key) {
+  circuits.delete(key)
+}
+
 async function getVideoHash(videoId) {
   const videoIdBuffer = new TextEncoder().encode(videoId)
 
@@ -32,6 +69,10 @@ async function getVideoHash(videoId) {
  * }[]>}
  */
 export async function sponsorBlockSkipSegments(videoId, categories) {
+  if (circuitOpen('SponsorBlock')) {
+    return []
+  }
+
   const videoIdHashPrefix = await getVideoHash(videoId)
   const requestUrl = `${store.getters.getSponsorBlockUrl}/api/skipSegments/${videoIdHashPrefix}?categories=${JSON.stringify(categories)}`
 
@@ -40,6 +81,7 @@ export async function sponsorBlockSkipSegments(videoId, categories) {
 
     // 404 means that there are no segments registered for the video
     if (response.status === 404) {
+      recordSuccess('SponsorBlock')
       return []
     }
 
@@ -49,16 +91,22 @@ export async function sponsorBlockSkipSegments(videoId, categories) {
     }
 
     const json = await response.json()
+    recordSuccess('SponsorBlock')
     return json
       .filter((result) => result.videoID === videoId)
       .flatMap((result) => result.segments)
   } catch (error) {
+    recordFailure('SponsorBlock')
     console.error('failed to fetch SponsorBlock segments', requestUrl, error)
     throw error
   }
 }
 
 export async function deArrowData(videoId) {
+  if (circuitOpen('DeArrow')) {
+    return undefined
+  }
+
   const videoIdHashPrefix = await getVideoHash(videoId)
   const requestUrl = `${store.getters.getSponsorBlockUrl}/api/branding/${videoIdHashPrefix}`
 
@@ -67,18 +115,25 @@ export async function deArrowData(videoId) {
 
     // 404 means that there are no segments registered for the video
     if (response.status === 404) {
+      recordSuccess('DeArrow')
       return undefined
     }
 
     const json = await response.json()
+    recordSuccess('DeArrow')
     return json[videoId] ?? undefined
   } catch (error) {
+    recordFailure('DeArrow')
     console.error('failed to fetch DeArrow data', requestUrl, error)
     throw error
   }
 }
 
 export async function deArrowThumbnail(videoId, timestamp) {
+  if (circuitOpen('DeArrowThumbnail')) {
+    return undefined
+  }
+
   let requestUrl = `${store.getters.getDeArrowThumbnailGeneratorUrl}/api/v1/getThumbnail?videoID=` + videoId
   if (timestamp != null) {
     requestUrl += `&time=${timestamp}`
@@ -89,10 +144,12 @@ export async function deArrowThumbnail(videoId, timestamp) {
 
     // 204 means that there are no thumbnails found for the video
     if (response.status === 204) {
+      recordSuccess('DeArrowThumbnail')
       return undefined
     }
 
     if (response.ok) {
+      recordSuccess('DeArrowThumbnail')
       return response.url
     }
 
@@ -101,6 +158,7 @@ export async function deArrowThumbnail(videoId, timestamp) {
     console.error(json)
     return undefined
   } catch (error) {
+    recordFailure('DeArrowThumbnail')
     console.error('failed to fetch DeArrow data', requestUrl, error)
     throw error
   }
