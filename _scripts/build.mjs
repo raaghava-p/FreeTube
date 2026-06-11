@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync } from 'node:fs'
+import { cpSync, mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { Arch, build, Platform } from 'electron-builder'
@@ -52,6 +52,8 @@ if (platform === 'darwin') {
 let darwinTempOutput
 if (platform === 'darwin') {
   darwinTempOutput = join(tmpdir(), 'freetube-build')
+  // stale output from a previous run breaks the codesign seal of the new app
+  rmSync(darwinTempOutput, { recursive: true, force: true })
   config.directories.output = darwinTempOutput
 }
 
