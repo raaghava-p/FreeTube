@@ -18,6 +18,7 @@
         alt=""
         :src="thumbnail"
         class="thumbnailImage"
+        loading="lazy"
       >
       <div
         class="videoCountContainer"

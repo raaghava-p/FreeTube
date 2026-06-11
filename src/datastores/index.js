@@ -37,6 +37,15 @@ function createDatastore(name) {
 export const settings = createDatastore('settings')
 export const profiles = createDatastore('profiles')
 export const playlists = createDatastore('playlists')
+
 export const history = createDatastore('history')
+// videoId is the primary lookup key for history upserts, updates, and deletes
+history.ensureIndexAsync({ fieldName: 'videoId' })
+// timeWatched is used for sorting when loading all history
+history.ensureIndexAsync({ fieldName: 'timeWatched' })
+
 export const searchHistory = createDatastore('search-history')
+// lastUpdatedAt is used for sorting when loading all search history
+searchHistory.ensureIndexAsync({ fieldName: 'lastUpdatedAt' })
+
 export const subscriptionCache = createDatastore('subscription-cache')

@@ -26,7 +26,6 @@
         <video
           ref="video"
           class="miniplayerVideoElement"
-          autoplay
           @ended="handleVideoEnded"
         />
       </div>

@@ -90,6 +90,21 @@ const actions = {
     showToast(i18n.global.t('Video.Videos added to queue', { count: videos.length }))
   },
 
+  playVideoAtFrontOfQueue({ commit }, videoData) {
+    const queueVideo = {
+      videoId: videoData.videoId,
+      title: videoData.title,
+      author: videoData.author,
+      authorId: videoData.authorId,
+      lengthSeconds: videoData.lengthSeconds,
+      timeAdded: Date.now(),
+      queueItemId: generateRandomUniqueId(),
+      type: 'video'
+    }
+
+    commit('playVideoAtFrontOfQueue', queueVideo)
+  },
+
   removeFromQueue({ commit, state }, queueItemId) {
     const exists = state.queueItems.some(item => item.queueItemId === queueItemId)
 
@@ -143,6 +158,11 @@ const mutations = {
 
   addVideosToQueue(state, videos) {
     state.queueItems.push(...videos)
+  },
+
+  playVideoAtFrontOfQueue(state, videoData) {
+    state.queueItems.unshift(videoData)
+    state.currentQueueIndex = 0
   },
 
   removeFromQueue(state, { queueItemId }) {

@@ -6,6 +6,7 @@
   "license": "AGPL-3.0-or-later",
   "main": "./dist/main.js",
   "private": true,
+  "sideEffects": ["*.css", "*.scss", "*.sass", "*.vue"],
   "author": {
     "name": "FreeTube Team",
     "email": "FreeTubeApp@protonmail.com",
@@ -73,6 +74,7 @@
     "vue-observe-visibility": "^2.0.0-alpha.1",
     "vue-router": "^5.0.2",
     "vuex": "^4.1.0",
+    "yaml-eslint-parser": "^2.0.0",
     "youtubei.js": "^16.0.1"
   },
   "devDependencies": {

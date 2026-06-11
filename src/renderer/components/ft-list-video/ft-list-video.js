@@ -12,6 +12,8 @@ import {
   deepCopy,
   debounce
 } from '../../helpers/utils'
+import { loadVideoInMiniplayer } from '../../helpers/miniplayer'
+import { prefetchVideoInfo } from '../../helpers/prefetch'
 import { deArrowData, deArrowThumbnail } from '../../helpers/sponsorblock'
 import thumbnailPlaceholder from '../../assets/img/thumbnail_placeholder.svg'
 
@@ -89,6 +91,7 @@ export default defineComponent({
   emits: ['move-video-down', 'move-video-up', 'pause-player', 'remove-from-playlist'],
   data: function () {
     return {
+      hoverPrefetchTimeout: null,
       id: '',
       title: '',
       channelName: null,
@@ -578,7 +581,24 @@ export default defineComponent({
       this.debounceGetDeArrowThumbnail()
     }
   },
+  beforeUnmount: function () {
+    clearTimeout(this.hoverPrefetchTimeout)
+  },
   methods: {
+    /**
+     * Prefetch the video's watch page data on deliberate hovers (the delay
+     * keeps scrolling past cards from firing requests), so that clicking
+     * the video starts playback near-instantly.
+     */
+    handlePrefetchMouseEnter: function () {
+      clearTimeout(this.hoverPrefetchTimeout)
+      this.hoverPrefetchTimeout = setTimeout(() => {
+        prefetchVideoInfo(this.id)
+      }, 400)
+    },
+    handlePrefetchMouseLeave: function () {
+      clearTimeout(this.hoverPrefetchTimeout)
+    },
     handleWatchPageLinkClick: function() {
       if (this.externalPlayerIsDefaultViewingMode) {
         this.handleExternalPlayer()
@@ -908,7 +928,50 @@ export default defineComponent({
         lengthSeconds: this.lengthSeconds
       }
 
+      const queueWasEmpty = !this.$store.getters.hasQueue
+
       this.addToQueue(videoData)
+
+      // matches YouTube: queueing the first video while browsing opens the
+      // miniplayer with that video ready to play. On the watch page the queue
+      // panel in the sidebar covers this instead.
+      if (queueWasEmpty && !this.$route.path.startsWith('/watch/')) {
+        this.setCurrentQueueIndex(0)
+        loadVideoInMiniplayer(videoData, { autoplay: false })
+      }
+    },
+
+    /**
+     * While the miniplayer is open, clicking a video plays it in the
+     * miniplayer at the front of the queue (like YouTube) instead of
+     * navigating to the watch page. Runs in the capture phase so it beats
+     * the router-link's own click handler.
+     * @param {MouseEvent} event
+     */
+    maybeInterceptClickForMiniplayer: function (event) {
+      if (!this.$store.getters.getMiniplayerEnabled) {
+        return
+      }
+
+      const link = event.target.closest('a')
+
+      if (!link || !link.getAttribute('href')?.includes('/watch/')) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      const videoData = {
+        videoId: this.id,
+        title: this.title,
+        author: this.channelName,
+        authorId: this.channelId,
+        lengthSeconds: this.lengthSeconds
+      }
+
+      this.playVideoAtFrontOfQueue(videoData)
+      loadVideoInMiniplayer(videoData)
     },
 
     ...mapActions([
@@ -919,6 +982,8 @@ export default defineComponent({
       'addVideo',
       'removeVideo',
       'addToQueue',
+      'playVideoAtFrontOfQueue',
+      'setCurrentQueueIndex',
     ])
   }
 })

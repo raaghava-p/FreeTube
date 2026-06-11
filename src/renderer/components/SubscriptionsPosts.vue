@@ -20,6 +20,7 @@ import SubscriptionsTabUi from './SubscriptionsTabUi/SubscriptionsTabUi.vue'
 
 import store from '../store/index'
 
+import { concurrentRequestLimitedMap } from '../helpers/subscriptions'
 import { copyToClipboard, getRelativeTimeFromDate, showToast } from '../helpers/utils'
 import { getLocalChannelCommunity } from '../helpers/api/local'
 import { invidiousGetCommunityPosts } from '../helpers/api/invidious'
@@ -191,7 +192,7 @@ async function loadPostsForSubscriptionsFromRemote() {
   errorChannels.value = []
   const subscriptionUpdates = []
 
-  const postListFromRemote = (await Promise.all(channelsToLoadFromRemote.map(async (channel) => {
+  const postListFromRemote = (await concurrentRequestLimitedMap(channelsToLoadFromRemote, async (channel) => {
     let posts = []
     if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
       posts = await getChannelPostsInvidious(channel)
@@ -231,7 +232,7 @@ async function loadPostsForSubscriptionsFromRemote() {
 
     posts = posts.filter(post => !forbiddenTitles.value.some(text => post.author.toLowerCase().includes(text)))
     return posts
-  }))).flat()
+  })).flat()
 
   postListFromRemote.sort((a, b) => {
     return b.publishedTime - a.publishedTime

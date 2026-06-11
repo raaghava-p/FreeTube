@@ -26,7 +26,7 @@ import {
 } from '../helpers/utils'
 import { getInvidiousChannelVideos, invidiousFetch } from '../helpers/api/invidious'
 import { getLocalChannelVideos } from '../helpers/api/local'
-import { parseYouTubeRSSFeed, updateVideoListAfterProcessing } from '../helpers/subscriptions'
+import { concurrentRequestLimitedMap, fetchWithRateLimitHandling, parseYouTubeRSSFeed, updateVideoListAfterProcessing } from '../helpers/subscriptions'
 
 const { t } = useI18n()
 
@@ -200,7 +200,7 @@ async function loadVideosForSubscriptionsFromRemote() {
   errorChannels.value = []
   const subscriptionUpdates = []
 
-  const videoListFromRemote = (await Promise.all(channelsToLoadFromRemote.map(async (channel) => {
+  const videoListFromRemote = (await concurrentRequestLimitedMap(channelsToLoadFromRemote, async (channel) => {
     let videos = []
     let name, thumbnailUrl
 
@@ -238,7 +238,7 @@ async function loadVideosForSubscriptionsFromRemote() {
     }
 
     return videos ?? []
-  }))).flat()
+  })).flat()
 
   videoList.value = updateVideoListAfterProcessing(videoListFromRemote)
   isLoading.value = false
@@ -294,7 +294,7 @@ async function getChannelVideosLocalRSS(channel, failedAttempts = 0) {
   const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`
 
   try {
-    const response = await fetch(feedUrl)
+    const response = await fetchWithRateLimitHandling(feedUrl)
 
     if (response.status === 403) {
       return {

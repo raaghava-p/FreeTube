@@ -7,6 +7,12 @@
       [appearance]: true,
       watched: addWatchedStyle
     }"
+    @mouseenter="handlePrefetchMouseEnter"
+    @mouseleave="handlePrefetchMouseLeave"
+    @focusin="handlePrefetchMouseEnter"
+    @focusout="handlePrefetchMouseLeave"
+    @click.capture="maybeInterceptClickForMiniplayer"
+    @keydown.enter.capture="maybeInterceptClickForMiniplayer"
   >
     <div
       class="videoThumbnail"
@@ -21,6 +27,7 @@
           :src="thumbnail"
           class="thumbnailImage"
           alt=""
+          loading="lazy"
           :style="{filter: blurThumbnailsStyle}"
         >
       </router-link>

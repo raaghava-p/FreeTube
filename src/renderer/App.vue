@@ -114,7 +114,7 @@
 
 <script setup>
 import { marked } from 'marked'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue'
 import { useI18n } from './composables/use-i18n-polyfill'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -177,20 +177,21 @@ const dataReady = ref(false)
 onMounted(async () => {
   await store.dispatch('grabUserSettings')
 
-  updateTheme()
-
-  await store.dispatch('fetchInvidiousInstancesFromFile')
-  if (defaultInvidiousInstance.value === '') {
-    await store.dispatch('setRandomCurrentInvidiousInstance')
-  }
-
-  store.dispatch('fetchInvidiousInstances').then(() => {
+  // Invidious setup and profile/data loading are independent — run in parallel
+  const invidiousSetupPromise = store.dispatch('fetchInvidiousInstancesFromFile').then(() => {
     if (defaultInvidiousInstance.value === '') {
-      store.dispatch('setRandomCurrentInvidiousInstance')
+      return store.dispatch('setRandomCurrentInvidiousInstance')
     }
+  }).then(() => {
+    // Network fetch of latest instances (non-blocking, runs in background)
+    store.dispatch('fetchInvidiousInstances').then(() => {
+      if (defaultInvidiousInstance.value === '') {
+        store.dispatch('setRandomCurrentInvidiousInstance')
+      }
+    })
   })
 
-  store.dispatch('grabAllProfiles', t('Profile.All Channels')).then(() => {
+  const profilesAndDataPromise = store.dispatch('grabAllProfiles', t('Profile.All Channels')).then(() => {
     store.dispatch('grabHistory')
     store.dispatch('grabAllPlaylists')
     store.dispatch('grabAllSubscriptions')
@@ -203,14 +204,16 @@ onMounted(async () => {
       enableOpenUrl()
       store.dispatch('getExternalPlayerCmdArgumentsData')
     }
-
-    dataReady.value = true
-
-    setTimeout(() => {
-      checkForNewUpdates()
-      checkForNewBlogPosts()
-    }, 500)
   })
+
+  await Promise.allSettled([invidiousSetupPromise, profilesAndDataPromise])
+
+  dataReady.value = true
+
+  setTimeout(() => {
+    checkForNewUpdates()
+    checkForNewBlogPosts()
+  }, 500)
 
   if (route.path === '/') {
     router.replace({ path: landingPage.value })
@@ -234,24 +237,21 @@ onBeforeUnmount(() => {
 /** @type {import('vue').ComputedRef<string>} */
 const baseTheme = computed(() => store.getters.getBaseTheme)
 
-watch(baseTheme, updateTheme)
-
 /** @type {import('vue').ComputedRef<string>} */
 const mainColor = computed(() => store.getters.getMainColor)
-
-watch(mainColor, updateTheme)
 
 /** @type {import('vue').ComputedRef<string>} */
 const secColor = computed(() => store.getters.getSecColor)
 
-watch(secColor, updateTheme)
-
-function updateTheme() {
-  document.body.className = `${baseTheme.value || 'system'} main${mainColor.value || 'Red'} sec${secColor.value || 'Blue'}`
+// Single watcher for all theme-related settings. Runs immediately to set initial theme,
+// then re-runs once (not 3 times) when settings load from DB changes all three values.
+watchEffect(() => {
+  const base = baseTheme.value || 'system'
+  const main = mainColor.value || 'Red'
+  const sec = secColor.value || 'Blue'
+  document.body.className = `${base} main${main} sec${sec}`
   document.body.dataset.systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
-updateTheme()
+})
 
 const showUpdatesBanner = ref(false)
 const latestVersionNumber = ref('')

@@ -13,6 +13,20 @@ import {
   getRelativeTimeFromDate,
 } from '../utils'
 
+/**
+ * Wraps a promise with a timeout to prevent indefinite hangs on network calls.
+ * @param {Promise} promise
+ * @param {number} ms timeout in milliseconds
+ * @param {string} message error message on timeout
+ * @returns {Promise}
+ */
+function withTimeout(promise, ms, message = 'Request timed out') {
+  return Promise.race([
+    promise,
+    new Promise((_resolve, reject) => setTimeout(() => reject(new Error(message)), ms))
+  ])
+}
+
 const TRACKING_PARAM_NAMES = [
   'utm_source',
   'utm_medium',
@@ -119,8 +133,8 @@ async function createInnertube({ withPlayer = false, location = undefined, safet
   })
 }
 
-/** @type {Innertube | null} */
-let searchSuggestionsSession = null
+/** @type {Promise<Innertube> | null} */
+let searchSuggestionsSessionPromise = null
 
 export async function getLocalSearchSuggestions(query) {
   // The search suggestions endpoint does not like search queries larger than SEARCH_CHAR_LIMIT
@@ -129,16 +143,18 @@ export async function getLocalSearchSuggestions(query) {
     return []
   }
 
-  // reuse innertube instance to keep the search suggestions snappy
-  if (searchSuggestionsSession === null) {
-    searchSuggestionsSession = await createInnertube()
+  // Cache the promise itself (not the resolved value) to prevent duplicate sessions
+  // when multiple calls arrive before the first createInnertube() resolves
+  if (searchSuggestionsSessionPromise === null) {
+    searchSuggestionsSessionPromise = createInnertube()
   }
 
-  return await searchSuggestionsSession.getSearchSuggestions(query)
+  const session = await searchSuggestionsSessionPromise
+  return await session.getSearchSuggestions(query)
 }
 
 export function clearLocalSearchSuggestionsSession() {
-  searchSuggestionsSession = null
+  searchSuggestionsSessionPromise = null
 }
 
 export async function getLocalPlaylist(id) {
@@ -468,7 +484,11 @@ export async function getLocalVideoInfo(id) {
     }
   }
 
-  const info = await webInnertube.getInfo(id, { po_token: contentPoToken })
+  const info = await withTimeout(
+    webInnertube.getInfo(id, { po_token: contentPoToken }),
+    30000,
+    'Video info request timed out after 30 seconds'
+  )
 
   // Some time would be used for parsing and maybe additional requests so end time should be calculated sooner to reduce actual waiting time
   // Legacy format requires this
@@ -492,7 +512,11 @@ export async function getLocalVideoInfo(id) {
     // getBasicInfo needs the signature timestamp (sts) from inside the player
     webEmbeddedInnertube.session.player = webInnertube.session.player
 
-    const bypassedInfo = await webEmbeddedInnertube.getBasicInfo(videoId, { client: 'WEB_EMBEDDED', po_token: contentPoToken })
+    const bypassedInfo = await withTimeout(
+      webEmbeddedInnertube.getBasicInfo(videoId, { client: 'WEB_EMBEDDED', po_token: contentPoToken }),
+      30000,
+      'Age-restricted video info request timed out after 30 seconds'
+    )
 
     if (bypassedInfo.playability_status.status === 'OK' && bypassedInfo.streaming_data) {
       info.playability_status = bypassedInfo.playability_status
@@ -610,10 +634,16 @@ export async function getLocalComments(id) {
  * @param {import('youtubei.js').Player} player
  */
 async function decipherFormats(formats, player) {
-  for (const format of formats) {
+  const results = await Promise.allSettled(formats.map(async (format) => {
     // toDash deciphers the format again, so if we overwrite the original URL,
     // it breaks because the n param would get deciphered twice and then be incorrect
     format.freeTubeUrl = await format.decipher(player)
+  }))
+
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      console.error('Failed to decipher format:', result.reason)
+    }
   }
 }
 

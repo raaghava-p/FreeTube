@@ -118,8 +118,8 @@ const { locale, t } = useI18n()
 
 const sessionDataLimit = sessionStorage.getItem('UserPlaylists/dataLimit')
 
-const dataLimit = ref(sessionDataLimit !== null ? parseInt(sessionDataLimit) : 100)
-const searchDataLimit = ref(100)
+const dataLimit = ref(sessionDataLimit !== null ? parseInt(sessionDataLimit) : 24)
+const searchDataLimit = ref(24)
 const showLoadMoreButton = ref(false)
 const query = ref('')
 const doSearchPlaylistsWithMatchingVideos = ref(false)
@@ -255,12 +255,12 @@ const fullData = computed(() => {
 const lowerCaseQuery = computed(() => query.value.toLowerCase())
 
 watch(lowerCaseQuery, () => {
-  searchDataLimit.value = 100
+  searchDataLimit.value = 24
   filterPlaylistAsync()
 })
 
 watch(doSearchPlaylistsWithMatchingVideos, () => {
-  searchDataLimit.value = 100
+  searchDataLimit.value = 24
   filterPlaylistAsync()
   saveStateInRouter()
 })
@@ -286,7 +286,7 @@ function updateUserPlaylistsSortBy(value) {
 function handleQueryChange(query_, limit = undefined, doSearchPlaylistsWithMatchingVideos_ = undefined, filterNow = false) {
   query.value = query_
 
-  let newLimit = 100
+  let newLimit = 24
 
   if (limit !== undefined) {
     const parsedLimit = parseInt(limit)
@@ -313,11 +313,11 @@ function handleQueryChange(query_, limit = undefined, doSearchPlaylistsWithMatch
 
 function increaseLimit() {
   if (query.value !== '') {
-    searchDataLimit.value += 100
+    searchDataLimit.value += 24
     saveStateInRouter()
     filterPlaylist()
   } else {
-    dataLimit.value += 100
+    dataLimit.value += 24
     sessionStorage.setItem('UserPlaylists/dataLimit', dataLimit.value.toFixed(0))
   }
 }

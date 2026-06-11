@@ -106,7 +106,7 @@ const props = defineProps({
   },
   initialDataLimit: {
     type: Number,
-    default: 100
+    default: 24
   },
   lastRefreshTimestamp: {
     type: String,

@@ -1,3 +1,6 @@
+import { cpSync, mkdirSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { basename, join } from 'node:path'
 import { Arch, build, Platform } from 'electron-builder'
 import config from './ebuilder.config.mjs'
 
@@ -8,10 +11,14 @@ let targets
 const platform = process.platform
 
 if (platform === 'darwin') {
-  let arch = Arch.x64
+  // default to the host architecture so Apple Silicon Macs get a native
+  // arm64 build instead of an x64 one that runs under Rosetta
+  let arch = process.arch === 'arm64' ? Arch.arm64 : Arch.x64
 
   if (args[2] === 'arm64') {
     arch = Arch.arm64
+  } else if (args[2] === 'x64') {
+    arch = Arch.x64
   }
 
   targets = Platform.MAC.createTarget(['DMG', 'zip', '7z'], arch)
@@ -37,9 +44,31 @@ if (platform === 'darwin') {
   targets = Platform.LINUX.createTarget(['deb', 'zip', '7z', 'rpm', 'AppImage', 'pacman'], arch)
 }
 
+// On macOS, package outside iCloud-synced folders (like ~/Documents):
+// the iCloud file provider re-adds Finder info xattrs to freshly packaged
+// files faster than electron-builder can codesign them, which makes signing
+// fail with "resource fork, Finder information, or similar detritus not allowed".
+// The finished artifacts are copied back into ./build afterwards.
+let darwinTempOutput
+if (platform === 'darwin') {
+  darwinTempOutput = join(tmpdir(), 'freetube-build')
+  config.directories.output = darwinTempOutput
+}
+
 try {
   const output = await build({ targets, config, publish: 'never' })
   console.log(output)
+
+  if (darwinTempOutput) {
+    mkdirSync('./build', { recursive: true })
+
+    for (const artifact of output) {
+      cpSync(artifact, join('./build', basename(artifact)), { recursive: true })
+    }
+
+    console.log('Copied artifacts to ./build')
+  }
 } catch (error) {
   console.error(error)
+  process.exitCode = 1
 }

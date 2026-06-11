@@ -1,19 +1,22 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+// Keep Subscriptions as static import — it's the default/home route and must load instantly
 import Subscriptions from '../views/Subscriptions/Subscriptions.vue'
-import SubscribedChannels from '../views/SubscribedChannels/SubscribedChannels.vue'
-import ProfileSettings from '../views/ProfileSettings/ProfileSettings.vue'
-import Trending from '../views/Trending/Trending.vue'
-import Popular from '../views/Popular/Popular.vue'
-import UserPlaylists from '../views/UserPlaylists/UserPlaylists.vue'
-import History from '../views/History/History.vue'
-import Settings from '../views/Settings/Settings.vue'
-import About from '../views/About/About.vue'
-import SearchPage from '../views/SearchPage/SearchPage.vue'
-import Playlist from '../views/Playlist/Playlist.vue'
-import Channel from '../views/Channel/Channel.vue'
-import Watch from '../views/Watch/Watch.vue'
-import Hashtag from '../views/Hashtag/Hashtag.vue'
-import Post from '../views/Post.vue'
+
+// Lazy-loaded routes — Webpack will code-split each into a separate chunk
+const SubscribedChannels = () => import(/* webpackChunkName: "subscribed-channels" */ '../views/SubscribedChannels/SubscribedChannels.vue')
+const ProfileSettings = () => import(/* webpackChunkName: "profile-settings" */ '../views/ProfileSettings/ProfileSettings.vue')
+const Trending = () => import(/* webpackChunkName: "trending" */ '../views/Trending/Trending.vue')
+const Popular = () => import(/* webpackChunkName: "popular" */ '../views/Popular/Popular.vue')
+const UserPlaylists = () => import(/* webpackChunkName: "user-playlists" */ '../views/UserPlaylists/UserPlaylists.vue')
+const History = () => import(/* webpackChunkName: "history" */ '../views/History/History.vue')
+const Settings = () => import(/* webpackChunkName: "settings" */ /* webpackPrefetch: true */ '../views/Settings/Settings.vue')
+const About = () => import(/* webpackChunkName: "about" */ '../views/About/About.vue')
+const SearchPage = () => import(/* webpackChunkName: "search" */ '../views/SearchPage/SearchPage.vue')
+const Playlist = () => import(/* webpackChunkName: "playlist" */ '../views/Playlist/Playlist.vue')
+const Channel = () => import(/* webpackChunkName: "channel" */ /* webpackPrefetch: true */ '../views/Channel/Channel.vue')
+const Watch = () => import(/* webpackChunkName: "watch" */ /* webpackPrefetch: true */ '../views/Watch/Watch.vue')
+const Hashtag = () => import(/* webpackChunkName: "hashtag" */ '../views/Hashtag/Hashtag.vue')
+const Post = () => import(/* webpackChunkName: "post" */ '../views/Post.vue')
 
 const router = createRouter({
   history: createWebHashHistory(),

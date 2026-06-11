@@ -31,6 +31,7 @@ import {
   parseLocalTextRuns,
   parseLocalWatchNextVideo
 } from '../../helpers/api/local'
+import { consumePrefetchedVideoInfo, prefetchVideoInfo } from '../../helpers/prefetch'
 import {
   convertInvidiousToLocalFormat,
   generateInvidiousDashManifestLocally,
@@ -75,6 +76,7 @@ export default defineComponent({
     'ft-age-restricted': FtAgeRestricted
   },
   beforeRouteLeave: async function (to, from, next) {
+    clearTimeout(this.nextInQueuePrefetchTimeout)
     this.handleRouteChange()
     window.removeEventListener('beforeunload', this.handleWatchProgressAutoSave)
     document.removeEventListener('keydown', this.resetAutoplayInterruptionTimeout)
@@ -93,6 +95,7 @@ export default defineComponent({
       startNextVideoInPip: false,
       isLoading: true,
       firstLoad: true,
+      nextInQueuePrefetchTimeout: null,
       useTheatreMode: false,
       videoPlayerLoaded: false,
       isFamilyFriendly: false,
@@ -219,6 +222,9 @@ export default defineComponent({
     isPlayingFromQueue: function () {
       return this.$store.getters.isPlayingFromQueue
     },
+    nextQueueItem: function () {
+      return this.$store.getters.getNextQueueItem
+    },
     autoplayEnabled: function () {
       if (this.watchingQueue) {
         return this.$store.getters.getAutoplayQueue
@@ -281,6 +287,13 @@ export default defineComponent({
         return ch
       })
     },
+    channelsHiddenNames() {
+      const names = new Set()
+      for (const ch of this.channelsHidden) {
+        names.add(ch.name)
+      }
+      return names
+    },
     forbiddenTitles() {
       return JSON.parse(this.$store.getters.getForbiddenTitles.toLowerCase())
     },
@@ -298,7 +311,7 @@ export default defineComponent({
     },
     nextRecommendedVideo: function () {
       return this.recommendedVideos.find((video) =>
-        !this.isHiddenVideo(this.forbiddenTitles, this.channelsHidden, video)
+        !this.isHiddenVideo(this.forbiddenTitles, this.channelsHiddenNames, video)
       )
     },
     startTimeSeconds: function () {
@@ -334,6 +347,12 @@ export default defineComponent({
   watch: {
     async $route() {
       await this.reloadView()
+    },
+    nextQueueItem() {
+      // re-prefetch when the upcoming queue item changes (reorder/removal)
+      if (!this.isLoading) {
+        this.schedulePrefetchNextInQueue()
+      }
     },
     userPlaylistsReady() {
       this.onMountedDependOnLocalStateLoading()
@@ -439,13 +458,36 @@ export default defineComponent({
       }
     },
 
+    /**
+     * Prefetch the next queued video's info shortly after the current one
+     * starts playing, so advancing through the queue is instant.
+     * Delayed so it never competes with the current video's initial buffering.
+     */
+    schedulePrefetchNextInQueue: function () {
+      clearTimeout(this.nextInQueuePrefetchTimeout)
+
+      if (!this.watchingQueue || !this.nextQueueItem) {
+        return
+      }
+
+      const nextVideoId = this.nextQueueItem.videoId
+
+      if (nextVideoId === this.videoId) {
+        return
+      }
+
+      this.nextInQueuePrefetchTimeout = setTimeout(() => {
+        prefetchVideoInfo(nextVideoId)
+      }, 10_000)
+    },
+
     getVideoInformationLocal: async function () {
       if (this.firstLoad) {
         this.isLoading = true
       }
 
       try {
-        const videoInfo = await getLocalVideoInfo(this.videoId)
+        const videoInfo = await (consumePrefetchedVideoInfo(this.videoId) ?? getLocalVideoInfo(this.videoId))
         const { info: result, poToken, clientInfo, adEndTimeUnixMs } = videoInfo
 
         this.adEndTimeUnixMs = adEndTimeUnixMs
@@ -459,11 +501,19 @@ export default defineComponent({
           })
           .map(parseLocalWatchNextVideo) ?? []
 
-        // place watched recommended videos last
-        this.recommendedVideos = [
-          ...recommendedVideos.filter((video) => !this.isRecommendedVideoWatched(video.videoId)),
-          ...recommendedVideos.filter((video) => this.isRecommendedVideoWatched(video.videoId))
-        ]
+        // place watched recommended videos last (single-pass partition)
+        {
+          const unwatched = []
+          const watched = []
+          for (const video of recommendedVideos) {
+            if (this.isRecommendedVideoWatched(video.videoId)) {
+              watched.push(video)
+            } else {
+              unwatched.push(video)
+            }
+          }
+          this.recommendedVideos = [...unwatched, ...watched]
+        }
 
         if (this.showFamilyFriendlyOnly && !this.isFamilyFriendly) {
           this.isLoading = false
@@ -880,6 +930,7 @@ export default defineComponent({
 
         this.isLoading = false
         this.updateTitle()
+        this.schedulePrefetchNextInQueue()
       } catch (err) {
         const errorMessage = this.$t('Local API Error (Click to copy)')
         showToast(`${errorMessage}: ${err}`, 10000, () => {
@@ -948,11 +999,19 @@ export default defineComponent({
             }
           })
 
-          // place watched recommended videos last
-          this.recommendedVideos = [
-            ...recommendedVideos.filter((video) => !this.isRecommendedVideoWatched(video.videoId)),
-            ...recommendedVideos.filter((video) => this.isRecommendedVideoWatched(video.videoId))
-          ]
+          // place watched recommended videos last (single-pass partition)
+          {
+            const unwatched = []
+            const watched = []
+            for (const video of recommendedVideos) {
+              if (this.isRecommendedVideoWatched(video.videoId)) {
+                watched.push(video)
+              } else {
+                unwatched.push(video)
+              }
+            }
+            this.recommendedVideos = [...unwatched, ...watched]
+          }
           this.isLive = result.liveNow
           this.isFamilyFriendly = result.isFamilyFriendly
           this.isPostLiveDvr = !!result.isPostLiveDvr
@@ -1848,11 +1907,21 @@ export default defineComponent({
       this.setAppTitle(`${this.videoTitle} - ${packageDetails.productName}`)
     },
 
-    isHiddenVideo: function (forbiddenTitles, channelsHidden, video) {
-      return channelsHidden.some(ch => ch.name === video.authorId) ||
-        channelsHidden.some(ch => ch.name === video.author) ||
-        forbiddenTitles.some((text) => video.title?.toLowerCase().includes(text)) ||
-        forbiddenTitles.some((text) => video.author?.toLowerCase().includes(text))
+    isHiddenVideo: function (forbiddenTitles, channelsHiddenNames, video) {
+      if (channelsHiddenNames.has(video.authorId) || channelsHiddenNames.has(video.author)) {
+        return true
+      }
+
+      const titleLower = video.title?.toLowerCase()
+      const authorLower = video.author?.toLowerCase()
+
+      for (const text of forbiddenTitles) {
+        if (titleLower?.includes(text) || authorLower?.includes(text)) {
+          return true
+        }
+      }
+
+      return false
     },
 
     toggleAutoplay: function() {

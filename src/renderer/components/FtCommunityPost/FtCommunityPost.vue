@@ -20,6 +20,7 @@
             :src="getBestQualityImage(authorThumbnails)"
             class="communityThumbnail"
             alt=""
+            loading="lazy"
           >
         </router-link>
         <img
@@ -27,6 +28,7 @@
           :src="getBestQualityImage(authorThumbnails)"
           class="communityThumbnail"
           alt=""
+          loading="lazy"
         >
       </template>
       <p
@@ -83,6 +85,7 @@
         :src="getBestQualityImage(postContent.content)"
         class="communityImage"
         alt=""
+        loading="lazy"
       >
     </div>
     <div

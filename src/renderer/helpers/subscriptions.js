@@ -1,5 +1,67 @@
 import store from '../store/index'
 
+const SUBSCRIPTION_FETCH_CONCURRENCY = 8
+
+/**
+ * Maps `items` through async `fn` with at most `limit` requests in flight at once.
+ * The subscription tabs use this instead of an unbounded `Promise.all`, because
+ * profiles with hundreds of subscriptions would otherwise burst-fire hundreds of
+ * simultaneous requests at YouTube and trip its rate limiting.
+ * @template T, U
+ * @param {T[]} items
+ * @param {(item: T, index: number) => Promise<U>} fn
+ * @param {number} limit
+ * @returns {Promise<U[]>}
+ */
+export async function concurrentRequestLimitedMap(items, fn, limit = SUBSCRIPTION_FETCH_CONCURRENCY) {
+  const results = new Array(items.length)
+  let nextIndex = 0
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex++
+      results[index] = await fn(items[index], index)
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+
+  return results
+}
+
+/**
+ * `fetch` wrapper for YouTube RSS feeds that retries when YouTube rate limits us
+ * (HTTP 429, or 403 which YouTube uses for rate limited RSS requests),
+ * waiting with exponential backoff plus jitter and honouring the
+ * Retry-After header when present.
+ * @param {string} url
+ * @param {RequestInit} [options]
+ * @param {number} [maxRetries]
+ * @returns {Promise<Response>}
+ */
+export async function fetchWithRateLimitHandling(url, options = {}, maxRetries = 3) {
+  let response
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    response = await fetch(url, options)
+
+    if (response.status !== 429 && response.status !== 403) {
+      return response
+    }
+
+    if (attempt < maxRetries) {
+      const retryAfterSeconds = parseInt(response.headers.get('Retry-After'))
+      const delay = !isNaN(retryAfterSeconds)
+        ? retryAfterSeconds * 1000
+        : (2 ** attempt) * 1000 + Math.random() * 1000
+
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+
+  return response
+}
+
 /**
  * Filtering and sort based on user preferences
  * @param {any[]} videos

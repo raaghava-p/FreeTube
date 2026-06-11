@@ -869,6 +869,9 @@ function runApp() {
 
   const htmlFullscreenWindowIds = new Set()
 
+  /** @type {Set<number>} Cached set of FreeTube window webContents IDs */
+  const freeTubeWindowIds = new Set()
+
   async function createWindow(
     {
       replaceMainWindow = true,
@@ -1099,6 +1102,10 @@ function runApp() {
       newWindow.loadURL(ROOT_APP_URL)
     }
 
+    // Cache this window's webContents ID for fast sync lookups
+    const webContentsId = newWindow.webContents.id
+    freeTubeWindowIds.add(webContentsId)
+
     if (typeof searchQueryText === 'string' && searchQueryText.length > 0) {
       /**
        * @param {import('electron').IpcMainEvent} event
@@ -1174,6 +1181,8 @@ function runApp() {
     })
 
     newWindow.once('closed', () => {
+      freeTubeWindowIds.delete(webContentsId)
+
       const allWindows = BrowserWindow.getAllWindows()
       if (allWindows.length !== 0 && newWindow === mainWindow) {
         // Replace mainWindow to avoid accessing `mainWindow.webContents`
@@ -2058,12 +2067,10 @@ function runApp() {
   // *********** //
 
   function syncOtherWindows(channel, event, payload) {
-    const otherWindows = BrowserWindow.getAllWindows().filter((window) => {
-      return window.webContents.id !== event.sender.id && isFreeTubeUrl(window.webContents.getURL())
-    })
-
-    for (const window of otherWindows) {
-      window.webContents.send(channel, payload)
+    for (const window of BrowserWindow.getAllWindows()) {
+      if (window.webContents.id !== event.sender.id && freeTubeWindowIds.has(window.webContents.id)) {
+        window.webContents.send(channel, payload)
+      }
     }
   }
 

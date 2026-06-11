@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import packageDetails from '../package.json' with { type: 'json' }
 
 /** @type {import('electron-builder').Configuration} */
@@ -30,6 +31,16 @@ export default {
   // electron-builder will however still spend time scanning the `node_modules` folder and building up a list of dependencies,
   // returning `false` from the `beforeBuild` hook skips that.
   beforeBuild: () => Promise.resolve(false),
+
+  // Strip extended attributes (Finder info, resource forks) from the packaged
+  // app before codesign runs, otherwise ad-hoc signing fails with
+  // "resource fork, Finder information, or similar detritus not allowed"
+  // when building from a directory that Finder/iCloud has decorated with xattrs.
+  afterPack: (context) => {
+    if (context.electronPlatformName === 'darwin') {
+      execSync(`xattr -cr "${context.appOutDir}"`)
+    }
+  },
   dmg: {
     contents: [
       {

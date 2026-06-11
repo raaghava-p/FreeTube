@@ -1,5 +1,6 @@
 import { defineComponent } from 'vue'
 import { mapActions, mapGetters } from 'vuex'
+import { loadVideoInMiniplayer } from '../../helpers/miniplayer'
 
 export default defineComponent({
   name: 'FtMiniplayer',
@@ -55,6 +56,12 @@ export default defineComponent({
           this.initPlayer()
         })
       }
+
+      if (newVal) {
+        document.addEventListener('keydown', this.handleEscape)
+      } else {
+        document.removeEventListener('keydown', this.handleEscape)
+      }
     },
 
     videoId() {
@@ -67,12 +74,25 @@ export default defineComponent({
       }
     }
   },
+  beforeUnmount() {
+    document.removeEventListener('keydown', this.handleEscape)
+  },
   methods: {
     ...mapActions([
       'disableMiniplayer',
       'playNextInQueue',
       'playPreviousInQueue'
     ]),
+
+    handleEscape(event) {
+      // matches YouTube: Esc closes the miniplayer,
+      // unless the user is typing somewhere
+      const tagName = event.target.tagName
+
+      if (event.key === 'Escape' && tagName !== 'INPUT' && tagName !== 'TEXTAREA') {
+        this.closeMiniplayer()
+      }
+    },
 
     async initPlayer() {
       try {
@@ -93,6 +113,14 @@ export default defineComponent({
         if (this.videoData.streamUrl) {
           video.src = this.videoData.streamUrl
           video.currentTime = this.getMiniplayerCurrentTime || 0
+
+          // matches YouTube: the first "Add to queue" opens the miniplayer
+          // ready to play, but paused
+          if (this.videoData.autoplay === false) {
+            this.isPaused = true
+            return
+          }
+
           try {
             await video.play()
             this.isPaused = false
@@ -135,17 +163,11 @@ export default defineComponent({
       if (!this.canPlayNext) return
 
       await this.playNextInQueue()
-      // Navigate to next video in queue
-      const queueItems = this.$store.getters.getQueueItems
-      const currentIndex = this.$store.getters.getCurrentQueueIndex
-      const nextItem = queueItems[currentIndex]
+      const nextItem = this.$store.getters.getCurrentQueueItem
 
       if (nextItem) {
-        this.$router.push({
-          path: `/watch/${nextItem.videoId}`,
-          query: { fromQueue: 'true' }
-        })
-        this.closeMiniplayer()
+        // play within the miniplayer, like YouTube, instead of navigating away
+        await loadVideoInMiniplayer(nextItem)
       }
     },
 
@@ -153,16 +175,10 @@ export default defineComponent({
       if (!this.canPlayPrevious) return
 
       await this.playPreviousInQueue()
-      const queueItems = this.$store.getters.getQueueItems
-      const currentIndex = this.$store.getters.getCurrentQueueIndex
-      const prevItem = queueItems[currentIndex]
+      const prevItem = this.$store.getters.getCurrentQueueItem
 
       if (prevItem) {
-        this.$router.push({
-          path: `/watch/${prevItem.videoId}`,
-          query: { fromQueue: 'true' }
-        })
-        this.closeMiniplayer()
+        await loadVideoInMiniplayer(prevItem)
       }
     },
 

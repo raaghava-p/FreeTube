@@ -103,9 +103,9 @@ const route = useRoute()
 const router = useRouter()
 
 const oldDataLimit = sessionStorage.getItem('History/dataLimit')
-const dataLimit = ref(oldDataLimit !== null ? parseInt(oldDataLimit) : 100)
+const dataLimit = ref(oldDataLimit !== null ? parseInt(oldDataLimit) : 24)
 
-const searchDataLimit = ref(100)
+const searchDataLimit = ref(24)
 const doCaseSensitiveSearch = ref(false)
 const showLoadMoreButton = ref(false)
 const query = ref('')
@@ -168,7 +168,7 @@ watch(doCaseSensitiveSearch, () => {
 function handleQueryChange(query_, limit = undefined, doCaseSensitiveSearch_ = undefined, filterNow = false) {
   query.value = query_
 
-  let newLimit = 100
+  let newLimit = 24
 
   if (limit !== undefined) {
     const parsedLimit = parseInt(limit)
@@ -195,10 +195,10 @@ function handleQueryChange(query_, limit = undefined, doCaseSensitiveSearch_ = u
 
 function increaseLimit() {
   if (query.value.length > 0) {
-    searchDataLimit.value += 100
+    searchDataLimit.value += 24
     filterHistory()
   } else {
-    dataLimit.value += 100
+    dataLimit.value += 24
     sessionStorage.setItem('History/dataLimit', dataLimit.value.toFixed(0))
   }
 }

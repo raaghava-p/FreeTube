@@ -21,6 +21,7 @@
           :src="thumbnailForDisplay"
           class="thumbnailImage"
           :class="{ blur: blurThumbnails }"
+          loading="lazy"
         >
       </RouterLink>
       <div

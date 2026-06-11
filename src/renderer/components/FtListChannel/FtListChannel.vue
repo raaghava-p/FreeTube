@@ -18,6 +18,7 @@
           :src="thumbnail"
           :class="!isGame ? 'channelImage' : 'gameImage'"
           alt=""
+          loading="lazy"
         >
       </router-link>
     </div>

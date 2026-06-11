@@ -43,12 +43,19 @@ const config = {
     scriptType: 'text/javascript',
     path: path.join(__dirname, '../dist'),
     filename: '[name].js',
+    chunkFilename: isDevMode ? '[name].js' : '[name].[contenthash:8].js',
+    publicPath: isDevMode ? '/' : 'app://bundle/',
   },
   module: {
     rules: [
       {
         test: /\.js$/,
-        use: 'babel-loader',
+        use: {
+          loader: 'babel-loader',
+          options: {
+            cacheDirectory: true,
+          },
+        },
         exclude: /node_modules/,
       },
       {
@@ -75,8 +82,11 @@ const config = {
           {
             loader: 'sass-loader',
             options: {
-              implementation: require('sass')
-            }
+              implementation: require('sass'),
+              sassOptions: {
+                outputStyle: isDevMode ? 'expanded' : 'compressed',
+              },
+            },
           },
         ],
       },
@@ -120,7 +130,31 @@ const config = {
     minimizer: [
       '...', // extend webpack's list instead of overwriting it
       new CssMinimizerPlugin()
-    ]
+    ],
+    splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 5,
+      cacheGroups: {
+        shakaPlayer: {
+          test: /[/\\]node_modules[/\\]shaka-player[/\\]/,
+          name: 'shaka-player',
+          chunks: 'all',
+          priority: 20,
+        },
+        youtubei: {
+          test: /[/\\]node_modules[/\\]youtubei\.js[/\\]/,
+          name: 'youtubei',
+          chunks: 'all',
+          priority: 15,
+        },
+        vendor: {
+          test: /[/\\]node_modules[/\\]/,
+          name: 'vendor',
+          chunks: 'all',
+          priority: 10,
+        },
+      },
+    },
   },
   node: {
     __dirname: false,
@@ -153,7 +187,7 @@ const config = {
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: isDevMode ? '[name].css' : '[name].[contenthash].css',
-      chunkFilename: isDevMode ? '[id].css' : '[id].[contenthash].css',
+      chunkFilename: isDevMode ? '[name].css' : '[name].[contenthash].css',
     }),
     new CopyWebpackPlugin({
       patterns: [
