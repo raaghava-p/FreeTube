@@ -5,6 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
+    <!-- Warm up connections to YouTube hosts during app boot, so the first
+         API call / thumbnail load doesn't pay DNS + TCP + TLS setup -->
+    <link rel="preconnect" href="https://www.youtube.com" crossorigin />
+    <link rel="preconnect" href="https://i.ytimg.com" />
+    <link rel="preconnect" href="https://yt3.ggpht.com" />
+    <link rel="dns-prefetch" href="https://redirector.googlevideo.com" />
     <% if (!process.env.IS_ELECTRON) { %>
     <link rel="manifest" href="static/manifest.json" />
     <% } %>

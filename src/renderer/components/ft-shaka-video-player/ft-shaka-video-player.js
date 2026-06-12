@@ -607,7 +607,14 @@ export default defineComponent({
         streaming: {
           bufferingGoal: 180,
           rebufferingGoal: 0.02,
-          bufferBehind: 300
+          bufferBehind: 300,
+
+          // speculatively fetch upcoming segments while the current one downloads
+          segmentPrefetchLimit: 2,
+
+          // never fetch the segment behind the playhead at startup,
+          // it only exists as a safety net for inaccurate live manifests
+          inaccurateManifestTolerance: 0
         },
         manifest: {
           disableVideo: format === 'audio',
